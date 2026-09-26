@@ -19,14 +19,14 @@ export default function Page() {
 
   // Define a cor de fundo única para cada aba
   const pageBackgrounds: Record<string, string> = {
-    painel: 'bg-[#ebd9c6]',       // Bege padrão
-    projetos: 'bg-[#e2d5c3]',     // Bege ligeiramente mais escuro
-    personagens: 'bg-[#f0e4d5]',  // Bege claro e suave
-    timeline: 'bg-[#e8ded1]',     // Tom terroso claro
-    universo: 'bg-[#ded3c1]',     // Tom de pergaminho antigo
-    escrita: 'bg-[#f4ebe1]',      // Off-white para escrita limpa
-    metas: 'bg-[#e5dcd0]',        // Tom neutro suave
-    ideias: 'bg-[#f2e6d8]',       // Tom caloroso
+    painel: 'bg-[#f3ccde]',       // Bege padrão
+    projetos: 'bg-[#f3ccde]',     // Bege ligeiramente mais escuro
+    personagens: 'bg-[#f3ccde]',  // Bege claro e suave
+    timeline: 'bg-[#f3ccde]',     // Tom terroso claro
+    universo: 'bg-[#f3ccde]',     // Tom de pergaminho antigo
+    escrita: 'bg-[#f3ccde]',      // Off-white para escrita limpa
+    metas: 'bg-[#f3ccde]',        // Tom neutro suave
+    ideias: 'bg-[#f3ccde]',       // Tom caloroso
   };
 
   return (
@@ -55,8 +55,8 @@ export default function Page() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2 space-y-6">
                 {/* Projetos Atuais */}
-                <div className="bg-[#f7eee3] border border-[#d8c2aa] rounded-xl p-5 shadow-sm space-y-3">
-                  <div className="flex items-center gap-2 font-serif font-bold text-lg text-[#7a5230] border-b border-[#d8c2aa]/60 pb-2">
+                <div className="bg-[#ffffff] border border-[#d8c2aa] rounded-xl p-5 shadow-sm space-y-3">
+                  <div className="flex items-center gap-2 font-serif font-bold text-lg text-[#1e0057] border-b border-[#d8c2aa]/60 pb-2">
                     <BookOpen size={20} />
                     <span>Projetos Atuais</span>
                   </div>
@@ -67,7 +67,7 @@ export default function Page() {
                         <span>60% - 12 capítulos</span>
                       </div>
                       <div className="w-full h-2 bg-stone-200 rounded-full overflow-hidden">
-                        <div className="h-full bg-[#385338] rounded-full" style={{ width: '60%' }} />
+                        <div className="h-full bg-[#32005c] rounded-full" style={{ width: '60%' }} />
                       </div>
                     </div>
                   </div>
@@ -76,8 +76,8 @@ export default function Page() {
 
               <div className="space-y-6">
                 {/* Personagem Destaque */}
-                <div className="bg-[#f7eee3] border border-[#d8c2aa] rounded-xl p-5 shadow-sm space-y-3">
-                  <div className="flex items-center gap-2 font-serif font-bold text-lg text-[#7a5230] border-b border-[#d8c2aa]/60 pb-2">
+                <div className="bg-[#ffffff] border border-[#d8c2aa] rounded-xl p-5 shadow-sm space-y-3">
+                  <div className="flex items-center gap-2 font-serif font-bold text-lg text-[#1e0057] border-b border-[#1e0057]/60 pb-2">
                     <User size={20} />
                     <span>Personagem Destaque</span>
                   </div>

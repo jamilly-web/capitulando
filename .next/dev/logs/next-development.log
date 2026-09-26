@@ -193,3 +193,70 @@
 {"timestamp":"00:45:25.498","source":"Server","level":"ERROR","message":"[browser] \"./src/app/globals.css\\nError: Error evaluating Node.js code\\nSyntaxError: Unexpected identifier '#d7b5d3'\\n    [at /workspaces/capitulando/tailwind.config.ts]\\n    [at new Script (node:vm:117:7)]\\n    [at createScript (node:vm:269:10)]\\n    [at Object.runInThisContext (node:vm:317:10)]\\n    [at evalModule (/workspaces/capitulando/node_modules/jiti/dist/jiti.js:1:251724)]\\n    [at jiti (/workspaces/capitulando/node_modules/jiti/dist/jiti.js:1:249841)]\\n    [at /workspaces/capitulando/node_modules/tailwindcss/lib/lib/load-config.js:52:26]\\n    [at loadConfig (/workspaces/capitulando/node_modules/tailwindcss/lib/lib/load-config.js:62:6)]\\n    [at getTailwindConfig (/workspaces/capitulando/node_modules/tailwindcss/lib/lib/setupTrackingContext.js:71:116)]\\n    [at /workspaces/capitulando/node_modules/tailwindcss/lib/lib/setupTrackingContext.js:100:92]\\n    [at /workspaces/capitulando/node_modules/tailwindcss/lib/processTailwindFeatures.js:46:11]\\n\\nImport trace:\\n  Client Component Browser:\\n    ./src/app/globals.css [Client Component Browser]\\n    ./src/app/layout.tsx [Server Component]\" \"\""}
 {"timestamp":"00:50:53.832","source":"Server","level":"LOG","message":"✓ Compiled in 99ms"}
 {"timestamp":"00:50:59.822","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"01:08:20.846","source":"Server","level":"LOG","message":"✓ Compiled in 378ms"}
+{"timestamp":"01:08:21.246","source":"Server","level":"WARN","message":"⚠ Fast Refresh had to perform a full reload when ./src/app/page.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload"}
+{"timestamp":"01:08:21.319","source":"Server","level":"ERROR","message":"⨯ Error: The default export is not a React Component in \"/page\""}
+{"timestamp":"01:08:21.322","source":"Server","level":"ERROR","message":"⨯ Error: The default export is not a React Component in \"/page\""}
+{"timestamp":"01:08:21.457","source":"Server","level":"ERROR","message":"⨯ Error: The default export is not a React Component in \"/page\""}
+{"timestamp":"01:08:21.459","source":"Server","level":"ERROR","message":"⨯ Error: The default export is not a React Component in \"/page\""}
+{"timestamp":"01:08:23.448","source":"Browser","level":"ERROR","message":"Uncaught Error: The default export is not a React Component in \"/page\""}
+{"timestamp":"01:08:23.449","source":"Server","level":"ERROR","message":"[browser] \"\\u001b[31mUncaught Error: The default export is not a React Component in \\\"/page\\\"\\u001b[39m\""}
+{"timestamp":"01:08:30.958","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"01:10:58.487","source":"Server","level":"LOG","message":"✓ Compiled in 155ms"}
+{"timestamp":"01:11:40.535","source":"Server","level":"LOG","message":"✓ Compiled in 51ms"}
+{"timestamp":"01:12:01.064","source":"Server","level":"LOG","message":"✓ Compiled in 41ms"}
+{"timestamp":"01:15:47.745","source":"Server","level":"LOG","message":"✓ Compiled in 60ms"}
+{"timestamp":"01:16:04.465","source":"Server","level":"LOG","message":"✓ Compiled in 42ms"}
+{"timestamp":"01:16:18.502","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"01:18:53.897","source":"Server","level":"LOG","message":"✓ Compiled in 31ms"}
+{"timestamp":"01:19:07.282","source":"Server","level":"LOG","message":"✓ Compiled in 68ms"}
+{"timestamp":"01:19:11.683","source":"Server","level":"LOG","message":"✓ Compiled in 42ms"}
+{"timestamp":"01:19:16.334","source":"Server","level":"LOG","message":"✓ Compiled in 30ms"}
+{"timestamp":"01:19:20.655","source":"Server","level":"LOG","message":"✓ Compiled in 33ms"}
+{"timestamp":"01:19:25.428","source":"Server","level":"LOG","message":"✓ Compiled in 35ms"}
+{"timestamp":"01:19:29.728","source":"Server","level":"LOG","message":"✓ Compiled in 31ms"}
+{"timestamp":"01:20:01.593","source":"Server","level":"LOG","message":"✓ Compiled in 167ms"}
+{"timestamp":"01:20:04.063","source":"Server","level":"LOG","message":"✓ Compiled in 147ms"}
+{"timestamp":"01:20:07.196","source":"Server","level":"LOG","message":"✓ Compiled in 138ms"}
+{"timestamp":"01:20:11.014","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"01:21:22.235","source":"Server","level":"LOG","message":"✓ Compiled in 35ms"}
+{"timestamp":"01:21:34.582","source":"Server","level":"LOG","message":"✓ Compiled in 30ms"}
+{"timestamp":"01:29:21.082","source":"Server","level":"LOG","message":"✓ Compiled in 36ms"}
+{"timestamp":"01:29:28.879","source":"Server","level":"LOG","message":"✓ Compiled in 40ms"}
+{"timestamp":"01:29:33.340","source":"Server","level":"LOG","message":"✓ Compiled in 33ms"}
+{"timestamp":"01:29:37.144","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"01:31:01.229","source":"Server","level":"LOG","message":"✓ Compiled in 33ms"}
+{"timestamp":"01:31:06.616","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"01:31:35.041","source":"Server","level":"LOG","message":"✓ Compiled in 27ms"}
+{"timestamp":"01:31:53.624","source":"Server","level":"LOG","message":"✓ Compiled in 53ms"}
+{"timestamp":"01:32:00.365","source":"Server","level":"LOG","message":"✓ Compiled in 53ms"}
+{"timestamp":"01:32:03.137","source":"Server","level":"LOG","message":"✓ Compiled in 28ms"}
+{"timestamp":"01:32:15.084","source":"Server","level":"LOG","message":"✓ Compiled in 38ms"}
+{"timestamp":"01:32:18.322","source":"Server","level":"LOG","message":"✓ Compiled in 41ms"}
+{"timestamp":"01:32:20.799","source":"Server","level":"LOG","message":"✓ Compiled in 33ms"}
+{"timestamp":"01:32:58.633","source":"Server","level":"LOG","message":"✓ Compiled in 32ms"}
+{"timestamp":"01:33:00.497","source":"Server","level":"LOG","message":"✓ Compiled in 35ms"}
+{"timestamp":"01:33:10.804","source":"Server","level":"LOG","message":"✓ Compiled in 57ms"}
+{"timestamp":"01:33:12.277","source":"Server","level":"LOG","message":"✓ Compiled in 77ms"}
+{"timestamp":"01:33:14.136","source":"Server","level":"LOG","message":"✓ Compiled in 55ms"}
+{"timestamp":"01:33:20.429","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"01:33:59.214","source":"Server","level":"LOG","message":"✓ Compiled in 36ms"}
+{"timestamp":"01:35:03.999","source":"Server","level":"LOG","message":"✓ Compiled in 109ms"}
+{"timestamp":"01:35:33.736","source":"Server","level":"LOG","message":"✓ Compiled in 43ms"}
+{"timestamp":"01:35:39.740","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"01:36:09.712","source":"Server","level":"LOG","message":"✓ Compiled in 39ms"}
+{"timestamp":"01:36:13.494","source":"Server","level":"LOG","message":"✓ Compiled in 42ms"}
+{"timestamp":"01:36:30.407","source":"Server","level":"LOG","message":"✓ Compiled in 36ms"}
+{"timestamp":"01:37:10.526","source":"Server","level":"LOG","message":"✓ Compiled in 51ms"}
+{"timestamp":"01:39:21.523","source":"Server","level":"LOG","message":""}
+{"timestamp":"01:39:21.524","source":"Server","level":"LOG","message":"Could not open page.tsx in the editor."}
+{"timestamp":"01:39:21.524","source":"Server","level":"LOG","message":"The editor process exited with an error: Terminal editors can only be used on macOS."}
+{"timestamp":"01:39:21.524","source":"Server","level":"LOG","message":""}
+{"timestamp":"01:39:21.524","source":"Server","level":"LOG","message":"To set up the editor integration, add something like REACT_EDITOR=atom to the .env.local file in your project folder and restart the development server."}
+{"timestamp":"01:39:21.524","source":"Server","level":"LOG","message":""}
+{"timestamp":"01:39:23.133","source":"Server","level":"LOG","message":""}
+{"timestamp":"01:39:23.133","source":"Server","level":"LOG","message":"Could not open layout.tsx in the editor."}
+{"timestamp":"01:39:23.133","source":"Server","level":"LOG","message":"The editor process exited with an error: Terminal editors can only be used on macOS."}
+{"timestamp":"01:39:23.133","source":"Server","level":"LOG","message":""}
+{"timestamp":"01:39:23.134","source":"Server","level":"LOG","message":"To set up the editor integration, add something like REACT_EDITOR=atom to the .env.local file in your project folder and restart the development server."}
+{"timestamp":"01:39:23.134","source":"Server","level":"LOG","message":""}

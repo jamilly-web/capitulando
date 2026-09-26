@@ -36,14 +36,14 @@ function Page() {
     const [activeTab, setActiveTab] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('painel');
     // Define a cor de fundo única para cada aba
     const pageBackgrounds = {
-        painel: 'bg-[#ebd9c6]',
-        projetos: 'bg-[#e2d5c3]',
-        personagens: 'bg-[#f0e4d5]',
-        timeline: 'bg-[#e8ded1]',
-        universo: 'bg-[#ded3c1]',
-        escrita: 'bg-[#f4ebe1]',
-        metas: 'bg-[#e5dcd0]',
-        ideias: 'bg-[#f2e6d8]'
+        painel: 'bg-[#f3ccde]',
+        projetos: 'bg-[#f3ccde]',
+        personagens: 'bg-[#f3ccde]',
+        timeline: 'bg-[#f3ccde]',
+        universo: 'bg-[#f3ccde]',
+        escrita: 'bg-[#f3ccde]',
+        metas: 'bg-[#f3ccde]',
+        ideias: 'bg-[#f3ccde]'
     };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "flex min-h-screen text-stone-800",
@@ -133,10 +133,10 @@ function Page() {
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "md:col-span-2 space-y-6",
                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "bg-[#f7eee3] border border-[#d8c2aa] rounded-xl p-5 shadow-sm space-y-3",
+                                            className: "bg-[#ffffff] border border-[#d8c2aa] rounded-xl p-5 shadow-sm space-y-3",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "flex items-center gap-2 font-serif font-bold text-lg text-[#7a5230] border-b border-[#d8c2aa]/60 pb-2",
+                                                    className: "flex items-center gap-2 font-serif font-bold text-lg text-[#1e0057] border-b border-[#d8c2aa]/60 pb-2",
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$book$2d$open$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__BookOpen$3e$__["BookOpen"], {
                                                             size: 20
@@ -188,7 +188,7 @@ function Page() {
                                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                                                 className: "w-full h-2 bg-stone-200 rounded-full overflow-hidden",
                                                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                                    className: "h-full bg-[#385338] rounded-full",
+                                                                    className: "h-full bg-[#32005c] rounded-full",
                                                                     style: {
                                                                         width: '60%'
                                                                     }
@@ -227,10 +227,10 @@ function Page() {
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "space-y-6",
                                         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "bg-[#f7eee3] border border-[#d8c2aa] rounded-xl p-5 shadow-sm space-y-3",
+                                            className: "bg-[#ffffff] border border-[#d8c2aa] rounded-xl p-5 shadow-sm space-y-3",
                                             children: [
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                    className: "flex items-center gap-2 font-serif font-bold text-lg text-[#7a5230] border-b border-[#d8c2aa]/60 pb-2",
+                                                    className: "flex items-center gap-2 font-serif font-bold text-lg text-[#1e0057] border-b border-[#1e0057]/60 pb-2",
                                                     children: [
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$user$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__User$3e$__["User"], {
                                                             size: 20

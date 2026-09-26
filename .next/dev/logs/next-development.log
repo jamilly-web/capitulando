@@ -260,3 +260,4 @@
 {"timestamp":"01:39:23.133","source":"Server","level":"LOG","message":""}
 {"timestamp":"01:39:23.134","source":"Server","level":"LOG","message":"To set up the editor integration, add something like REACT_EDITOR=atom to the .env.local file in your project folder and restart the development server."}
 {"timestamp":"01:39:23.134","source":"Server","level":"LOG","message":""}
+{"timestamp":"01:47:47.264","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}

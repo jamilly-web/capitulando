@@ -20,10 +20,12 @@ import {
   Heart,
   Users,
   ArrowRight,
+  BookOpen,
 } from 'lucide-react';
 
 interface Character {
   id: string;
+  projectId: string; // Associação ao Projeto
   name: string;
   role: 'Protagonista' | 'Aliado' | 'Antagonista' | 'Secundário';
   age: number;
@@ -42,18 +44,30 @@ interface Character {
 
 interface Relationship {
   id: string;
+  projectId: string; // Associação ao Projeto
   character1Id: string;
   character2Id: string;
-  type: string; // ex: "Amigos", "Inimigos", "Romance", "Rivais", "Família"
+  type: string;
   description: string;
 }
+
+interface ProjectMinimal {
+  id: string;
+  title: string;
+}
+
+const DEFAULT_PROJECTS: ProjectMinimal[] = [
+  { id: '1', title: 'O Guardião da Floresta' },
+  { id: '2', title: 'Segredos de Algures' },
+];
 
 const DEFAULT_CHARACTERS: Character[] = [
   {
     id: '1',
+    projectId: '1',
     name: 'Anya Silva',
     role: 'Protagonista',
-    age: 23,
+    age: 24,
     height: '1,68 m',
     weight: '58 kg',
     zodiac: 'Peixes ♓',
@@ -75,7 +89,8 @@ const DEFAULT_CHARACTERS: Character[] = [
   },
   {
     id: '2',
-    name: 'Ben Thorne',
+    projectId: '1',
+    name: 'Park Jimin',
     role: 'Aliado',
     age: 25,
     height: '1,82 m',
@@ -101,6 +116,7 @@ const DEFAULT_CHARACTERS: Character[] = [
 const DEFAULT_RELATIONSHIPS: Relationship[] = [
   {
     id: 'r1',
+    projectId: '1',
     character1Id: '1',
     character2Id: '2',
     type: 'Confiança Mútua',
@@ -112,6 +128,28 @@ export function CharactersSection() {
   const [activeTab, setActiveTab] = useState<'characters' | 'relationships'>('characters');
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<string>('Todos');
+
+  // Carrega Lista de Projetos do localStorage
+  const [projects, setProjects] = useState<ProjectMinimal[]>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('capitulando_projects');
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (parsed.length > 0) {
+            return parsed.map((p: any) => ({ id: p.id, title: p.title }));
+          }
+        } catch (e) {
+          console.error('Erro ao ler projetos do localStorage', e);
+        }
+      }
+    }
+    return DEFAULT_PROJECTS;
+  });
+
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(
+    () => projects[0]?.id || '1'
+  );
 
   // Estado dos Personagens (localStorage)
   const [characters, setCharacters] = useState<Character[]>(() => {
@@ -143,14 +181,13 @@ export function CharactersSection() {
     return DEFAULT_RELATIONSHIPS;
   });
 
-  // Grava Personagens no localStorage
+  // Gravar no localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('capitulando_characters', JSON.stringify(characters));
     }
   }, [characters]);
 
-  // Grava Relacionamentos no localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem('capitulando_relationships', JSON.stringify(relationships));
@@ -191,6 +228,10 @@ export function CharactersSection() {
   });
 
   const categories = ['Todos', 'Protagonista', 'Aliado', 'Antagonista', 'Secundário'];
+
+  // Personagens e Relacionamentos pertencentes APENAS ao projeto ativo
+  const currentProjectCharacters = characters.filter((c) => (c.projectId || '1') === selectedProjectId);
+  const currentProjectRelationships = relationships.filter((r) => (r.projectId || '1') === selectedProjectId);
 
   // Handlers Personagens
   const handleOpenCreate = () => {
@@ -240,6 +281,7 @@ export function CharactersSection() {
 
     const formattedCharacter: Character = {
       id: editingId || Date.now().toString(),
+      projectId: selectedProjectId,
       name: formData.name || 'Sem nome',
       role: formData.role,
       age: Number(formData.age) || 0,
@@ -288,8 +330,8 @@ export function CharactersSection() {
   const handleOpenRelCreate = () => {
     setEditingRelId(null);
     setRelFormData({
-      character1Id: characters[0]?.id || '',
-      character2Id: characters[1]?.id || characters[0]?.id || '',
+      character1Id: currentProjectCharacters[0]?.id || '',
+      character2Id: currentProjectCharacters[1]?.id || currentProjectCharacters[0]?.id || '',
       type: 'Amigo',
       description: '',
     });
@@ -317,6 +359,7 @@ export function CharactersSection() {
 
     const newRel: Relationship = {
       id: editingRelId || Date.now().toString(),
+      projectId: selectedProjectId,
       character1Id: relFormData.character1Id,
       character2Id: relFormData.character2Id,
       type: relFormData.type || 'Indefinido',
@@ -340,7 +383,7 @@ export function CharactersSection() {
     }
   };
 
-  const filteredCharacters = characters.filter((c) => {
+  const filteredCharacters = currentProjectCharacters.filter((c) => {
     const matchesSearch = c.name.toLowerCase().includes(search.toLowerCase());
     const matchesFilter = filter === 'Todos' || c.role === filter;
     return matchesSearch && matchesFilter;
@@ -348,37 +391,55 @@ export function CharactersSection() {
 
   return (
     <div className="space-y-6 font-sans">
-      {/* Abas Superiores */}
-      <div className="flex border-b-2 border-[#d8c2aa] gap-4">
-        <button
-          onClick={() => setActiveTab('characters')}
-          className={`pb-3 px-4 font-bold text-sm flex items-center gap-2 border-b-4 -mb-[2px] transition-all ${
-            activeTab === 'characters'
-              ? 'border-[#385338] text-[#385338]'
-              : 'border-transparent text-stone-500 hover:text-stone-800'
-          }`}
-        >
-          <Users size={18} />
-          <span>Fichas de Personagens</span>
-        </button>
-        <button
-          onClick={() => setActiveTab('relationships')}
-          className={`pb-3 px-4 font-bold text-sm flex items-center gap-2 border-b-4 -mb-[2px] transition-all ${
-            activeTab === 'relationships'
-              ? 'border-[#385338] text-[#385338]'
-              : 'border-transparent text-stone-500 hover:text-stone-800'
-          }`}
-        >
-          <Heart size={18} />
-          <span>Relacionamentos ({relationships.length})</span>
-        </button>
+      {/* Barra de Seleção de Projeto e Abas */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-[#d8c2aa] pb-2 gap-4">
+        <div className="flex gap-4">
+          <button
+            onClick={() => setActiveTab('characters')}
+            className={`pb-2 px-3 font-bold text-sm flex items-center gap-2 border-b-4 -mb-[10px] transition-all ${
+              activeTab === 'characters'
+                ? 'border-[#32005c] text-[#385338]'
+                : 'border-transparent text-stone-500 hover:text-stone-800'
+            }`}
+          >
+            <Users size={18} />
+            <span>Fichas de Personagens ({currentProjectCharacters.length})</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('relationships')}
+            className={`pb-2 px-3 font-bold text-sm flex items-center gap-2 border-b-4 -mb-[10px] transition-all ${
+              activeTab === 'relationships'
+                ? 'border-[#32005c] text-[#385338]'
+                : 'border-transparent text-stone-500 hover:text-stone-800'
+            }`}
+          >
+            <Heart size={18} />
+            <span>Relacionamentos ({currentProjectRelationships.length})</span>
+          </button>
+        </div>
+
+        {/* Seletor do Projeto */}
+        <div className="flex items-center gap-2 bg-[#f7eee3] px-3 py-1.5 rounded-xl border border-[#d8c2aa]">
+          <BookOpen size={16} className="text-[#385338]" />
+          <span className="text-xs text-stone-600 font-medium">Projeto:</span>
+          <select
+            value={selectedProjectId}
+            onChange={(e) => setSelectedProjectId(e.target.value)}
+            className="bg-transparent text-xs font-bold text-stone-900 focus:outline-none cursor-pointer"
+          >
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.title}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* ABA 1: PERSONAGENS */}
       {activeTab === 'characters' && (
         <>
-          {/* Barra de Filtros e Pesquisa */}
-          <div className="bg-[#f7eee3] p-4 rounded-2xl border-2 border-[#d8c2aa] flex flex-col md:flex-row gap-4 items-center justify-between shadow-md">
+          <div className="bg-[#FAE6FA] p-4 rounded-2xl border-2 border-[#32005c] flex flex-col md:flex-row gap-4 items-center justify-between shadow-md">
             <div className="relative w-full md:w-80">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
               <input
@@ -386,7 +447,7 @@ export function CharactersSection() {
                 placeholder="Pesquisar ficha..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-[#ebd9c6]/50 border border-[#d8c2aa] rounded-xl text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#385338]"
+                className="w-full pl-10 pr-4 py-2 bg-[#ffffff]/50 border border-[#32005c] rounded-xl text-xs text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#385338]"
               />
             </div>
 
@@ -397,8 +458,8 @@ export function CharactersSection() {
                   onClick={() => setFilter(cat)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                     filter === cat
-                      ? 'bg-[#385338] text-white shadow-sm scale-105'
-                      : 'bg-[#ebd9c6]/60 text-stone-700 hover:bg-[#d8c2aa]'
+                      ? 'bg-[#32005c] text-white shadow-sm scale-105'
+                      : 'bg-[#FAE6FA]/60 text-stone-700 hover:bg-[#f3ccde]'
                   }`}
                 >
                   {cat}
@@ -408,19 +469,18 @@ export function CharactersSection() {
 
             <button
               onClick={handleOpenCreate}
-              className="w-full md:w-auto bg-[#385338] hover:bg-[#2c422c] text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95"
+              className="w-full md:w-auto bg-[#32005c] hover:bg-[#2c422c] text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95"
             >
               <Plus size={16} />
               <span>Criar Ficha</span>
             </button>
           </div>
 
-          {/* Grid de Personagens */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
             {filteredCharacters.map((char) => (
               <div
                 key={char.id}
-                className="relative bg-[#ffffff] border-2 border-[#d8c2aa] rounded-3xl p-6 sm:p-8 shadow-lg space-y-6 overflow-hidden"
+                className="relative bg-[#FAE6FA] border-2 border-[#32005c] rounded-3xl p-6 sm:p-8 shadow-lg space-y-6 overflow-hidden"
                 style={{
                   backgroundImage:
                     'radial-gradient(#d8c2aa 0.75px, transparent 0.75px)',
@@ -433,14 +493,14 @@ export function CharactersSection() {
                   <button
                     onClick={() => handleOpenEdit(char)}
                     title="Editar Ficha"
-                    className="p-1.5 bg-[#f7eee3] hover:bg-[#ebd9c6] rounded-lg border border-[#d8c2aa] text-stone-700 transition-colors shadow-sm"
+                    className="p-1.5 bg-[#f3ccde] hover:bg-[#f3ccde] rounded-lg border border-[#d8c2aa] text-stone-700 transition-colors shadow-sm"
                   >
                     <Edit2 size={15} />
                   </button>
                   <button
                     onClick={() => handleDelete(char.id)}
                     title="Eliminar Ficha"
-                    className="p-1.5 bg-[#f7eee3] hover:bg-red-100 rounded-lg border border-[#d8c2aa] text-red-600 transition-colors shadow-sm"
+                    className="p-1.5 bg-[#f3ccde] hover:bg-red-100 rounded-lg border border-[#d8c2aa] text-red-600 transition-colors shadow-sm"
                   >
                     <Trash2 size={15} />
                   </button>
@@ -458,7 +518,7 @@ export function CharactersSection() {
                         )}
                       </div>
                       <div className="mt-2 text-center">
-                        <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold bg-[#385338] text-white rounded-full">
+                        <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold bg-[#32005c] text-white rounded-full">
                           {char.role}
                         </span>
                       </div>
@@ -470,7 +530,7 @@ export function CharactersSection() {
                       <h3 className="text-2xl font-bold font-serif text-stone-900">{char.name}</h3>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-xs bg-[#f7eee3]/70 p-3 rounded-xl border border-[#d8c2aa]">
+                    <div className="grid grid-cols-2 gap-2 text-xs bg-[#f3ccde]/70 p-3 rounded-xl border border-[#32005c]">
                       <div className="flex items-center gap-1.5 text-stone-700">
                         <Calendar size={14} className="text-[#385338]" />
                         <span><strong>Idade:</strong> {char.age} anos</span>
@@ -496,7 +556,7 @@ export function CharactersSection() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                  <div className="bg-[#f7eee3]/50 p-3 rounded-xl border border-[#d8c2aa]">
+                  <div className="bg-[#f3ccde]/50 p-3 rounded-xl border border-[#32005c]">
                     <h4 className="font-bold text-stone-800 mb-2 flex items-center gap-1.5">
                       <Sparkles size={14} className="text-[#385338]" /> Aparência
                     </h4>
@@ -507,7 +567,7 @@ export function CharactersSection() {
                     </ul>
                   </div>
 
-                  <div className="bg-[#f7eee3]/50 p-3 rounded-xl border border-[#d8c2aa] space-y-3">
+                  <div className="bg-[#f3ccde]/50 p-3 rounded-xl border border-[#32005c] space-y-3">
                     <div>
                       <h4 className="font-bold text-stone-800 mb-1 flex items-center gap-1.5">
                         <Smile size={14} className="text-[#385338]" /> Gosta
@@ -531,7 +591,7 @@ export function CharactersSection() {
                   </div>
 
                   {char.motto && (
-                    <div className="flex items-center gap-2 italic text-stone-600 bg-[#f7eee3]/40 p-2.5 rounded-xl border border-[#d8c2aa]/60">
+                    <div className="flex items-center gap-2 italic text-stone-600 bg-[#f3ccde]/40 p-2.5 rounded-xl border border-[#32005c]/60">
                       <Quote size={14} className="text-[#385338] shrink-0" />
                       <span>"{char.motto}"</span>
                     </div>
@@ -540,44 +600,52 @@ export function CharactersSection() {
               </div>
             ))}
           </div>
+
+          {filteredCharacters.length === 0 && (
+            <div className="text-center py-12 bg-[#f3ccde] rounded-2xl border-2 border-[#d8c2aa] text-stone-500 space-y-2">
+              <Users size={36} className="mx-auto text-stone-400" />
+              <p className="text-sm font-semibold">Nenhuma ficha criada para este projeto.</p>
+              <p className="text-xs text-stone-400">Clique em "Criar Ficha" para adicionar o primeiro personagem.</p>
+            </div>
+          )}
         </>
       )}
 
       {/* ABA 2: RELACIONAMENTOS */}
       {activeTab === 'relationships' && (
         <div className="space-y-6">
-          <div className="bg-[#f7eee3] p-4 rounded-2xl border-2 border-[#d8c2aa] flex justify-between items-center shadow-md">
+          <div className="bg-[#FAE6FA] p-4 rounded-2xl border-2 border-[#32005c] flex justify-between items-center shadow-md">
             <div>
               <h3 className="font-bold font-serif text-stone-900 text-base">Mapa de Relacionamentos</h3>
-              <p className="text-xs text-stone-600">Defina as ligações e dinâmicas entre as tuas personagens.</p>
+              <p className="text-xs text-stone-600">Defina as ligações entre personagens deste projeto.</p>
             </div>
             <button
               onClick={handleOpenRelCreate}
-              disabled={characters.length < 2}
-              className="bg-[#385338] hover:bg-[#2c422c] disabled:opacity-50 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-transform active:scale-95"
+              disabled={currentProjectCharacters.length < 2}
+              className="bg-[#32005c] hover:bg-[#2c422c] disabled:opacity-50 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm transition-transform active:scale-95"
             >
               <Plus size={16} />
               <span>Adicionar Relacionamento</span>
             </button>
           </div>
 
-          {characters.length < 2 && (
+          {currentProjectCharacters.length < 2 && (
             <div className="bg-amber-50 border border-amber-200 p-4 rounded-xl text-xs text-amber-800">
-              Crie pelo menos 2 personagens para poder estabelecer relacionamentos entre elas.
+              Crie pelo menos 2 personagens neste projeto para estabelecer relacionamentos.
             </div>
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {relationships.map((rel) => {
-              const char1 = characters.find((c) => c.id === rel.character1Id);
-              const char2 = characters.find((c) => c.id === rel.character2Id);
+            {currentProjectRelationships.map((rel) => {
+              const char1 = currentProjectCharacters.find((c) => c.id === rel.character1Id);
+              const char2 = currentProjectCharacters.find((c) => c.id === rel.character2Id);
 
               if (!char1 || !char2) return null;
 
               return (
                 <div
                   key={rel.id}
-                  className="bg-white border-2 border-[#d8c2aa] rounded-2xl p-5 shadow-md relative space-y-3"
+                  className="bg-white border-2 border-[#32005c] rounded-2xl p-5 shadow-md relative space-y-3"
                 >
                   <div className="absolute top-3 right-3 flex items-center gap-1">
                     <button
@@ -595,9 +663,8 @@ export function CharactersSection() {
                   </div>
 
                   <div className="flex items-center gap-3">
-                    {/* Personagem 1 */}
                     <div className="flex flex-col items-center gap-1 w-24 text-center">
-                      <div className="w-12 h-12 rounded-full border border-[#d8c2aa] overflow-hidden bg-stone-100">
+                      <div className="w-12 h-12 rounded-full border border-[#32005c] overflow-hidden bg-stone-100">
                         {char1.imageUrl ? (
                           <img src={char1.imageUrl} alt={char1.name} className="w-full h-full object-cover" />
                         ) : (
@@ -607,9 +674,8 @@ export function CharactersSection() {
                       <span className="text-xs font-bold text-stone-800 truncate max-w-full">{char1.name}</span>
                     </div>
 
-                    {/* Ícone de Conexão */}
                     <div className="flex-1 flex flex-col items-center justify-center gap-1">
-                      <span className="px-2 py-0.5 bg-[#f7eee3] border border-[#d8c2aa] rounded-full text-[10px] font-bold text-[#385338]">
+                      <span className="px-2 py-0.5 bg-[#FAE6FA] border border-[#32005c] rounded-full text-[10px] font-bold text-[#32005c]">
                         {rel.type}
                       </span>
                       <div className="flex items-center text-stone-400 w-full justify-center">
@@ -619,9 +685,8 @@ export function CharactersSection() {
                       </div>
                     </div>
 
-                    {/* Personagem 2 */}
                     <div className="flex flex-col items-center gap-1 w-24 text-center">
-                      <div className="w-12 h-12 rounded-full border border-[#d8c2aa] overflow-hidden bg-stone-100">
+                      <div className="w-12 h-12 rounded-full border border-[#32005c] overflow-hidden bg-stone-100">
                         {char2.imageUrl ? (
                           <img src={char2.imageUrl} alt={char2.name} className="w-full h-full object-cover" />
                         ) : (
@@ -633,7 +698,7 @@ export function CharactersSection() {
                   </div>
 
                   {rel.description && (
-                    <p className="text-xs text-stone-600 bg-[#f7eee3]/50 p-2.5 rounded-xl border border-[#d8c2aa]/40">
+                    <p className="text-xs text-stone-600 bg-[#FAE6FA]/50 p-2.5 rounded-xl border border-[#32005c]/40">
                       {rel.description}
                     </p>
                   )}
@@ -644,11 +709,11 @@ export function CharactersSection() {
         </div>
       )}
 
-      {/* Modal de Criar/Editar Personagem */}
+      {/* Modal Criar/Editar Personagem */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#f7eee3] border-2 border-[#d8c2aa] rounded-3xl p-6 w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl space-y-4">
-            <div className="flex justify-between items-center border-b border-[#d8c2aa] pb-3">
+          <div className="bg-[#f5f5f5] border-2 border-[#32005c] rounded-3xl p-6 w-full max-w-xl max-h-[90vh] overflow-y-auto shadow-2xl space-y-4">
+            <div className="flex justify-between items-center border-b border-[#32005c] pb-3">
               <h3 className="font-bold font-serif text-lg text-stone-900">
                 {editingId ? 'Editar Ficha' : 'Criar Nova Ficha'}
               </h3>
@@ -666,7 +731,7 @@ export function CharactersSection() {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full p-2 bg-[#ffffff] border border-[#d8c2aa] rounded-lg"
+                    className="w-full p-2 bg-[#ffffff] border border-[#32005c] rounded-lg"
                   />
                 </div>
                 <div>
@@ -676,7 +741,7 @@ export function CharactersSection() {
                     onChange={(e) =>
                       setFormData({ ...formData, role: e.target.value as Character['role'] })
                     }
-                    className="w-full p-2 bg-[#ffffff] border border-[#d8c2aa] rounded-lg"
+                    className="w-full p-2 bg-[#ffffff] border border-[#32005c] rounded-lg"
                   >
                     <option value="Protagonista">Protagonista</option>
                     <option value="Aliado">Aliado</option>
@@ -693,7 +758,7 @@ export function CharactersSection() {
                     type="number"
                     value={formData.age}
                     onChange={(e) => setFormData({ ...formData, age: Number(e.target.value) })}
-                    className="w-full p-2 bg-[#ffffff] border border-[#d8c2aa] rounded-lg"
+                    className="w-full p-2 bg-[#ffffff] border border-[#32005c] rounded-lg"
                   />
                 </div>
                 <div>
@@ -702,7 +767,7 @@ export function CharactersSection() {
                     type="text"
                     value={formData.height}
                     onChange={(e) => setFormData({ ...formData, height: e.target.value })}
-                    className="w-full p-2 bg-[#ffffff] border border-[#d8c2aa] rounded-lg"
+                    className="w-full p-2 bg-[#ffffff] border border-[#32005c] rounded-lg"
                   />
                 </div>
                 <div>
@@ -711,7 +776,7 @@ export function CharactersSection() {
                     type="text"
                     value={formData.weight}
                     onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
-                    className="w-full p-2 bg-[#ffffff] border border-[#d8c2aa] rounded-lg"
+                    className="w-full p-2 bg-[#ffffff] border border-[#32005c] rounded-lg"
                   />
                 </div>
               </div>
@@ -723,7 +788,7 @@ export function CharactersSection() {
                     type="text"
                     value={formData.zodiac}
                     onChange={(e) => setFormData({ ...formData, zodiac: e.target.value })}
-                    className="w-full p-2 bg-[#ffffff] border border-[#d8c2aa] rounded-lg"
+                    className="w-full p-2 bg-[#ffffff] border border-[#32005c] rounded-lg"
                   />
                 </div>
                 <div>
@@ -732,7 +797,7 @@ export function CharactersSection() {
                     type="text"
                     value={formData.mbti}
                     onChange={(e) => setFormData({ ...formData, mbti: e.target.value })}
-                    className="w-full p-2 bg-[#ffffff] border border-[#d8c2aa] rounded-lg"
+                    className="w-full p-2 bg-[#ffffff] border border-[#32005c] rounded-lg"
                   />
                 </div>
               </div>
@@ -743,7 +808,7 @@ export function CharactersSection() {
                   type="text"
                   value={formData.imageUrl}
                   onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  className="w-full p-2 bg-[#ffffff] border border-[#d8c2aa] rounded-lg"
+                  className="w-full p-2 bg-[#fffff] border border-[#32005c] rounded-lg"
                 />
               </div>
 
@@ -753,7 +818,7 @@ export function CharactersSection() {
                   type="text"
                   value={formData.appearance}
                   onChange={(e) => setFormData({ ...formData, appearance: e.target.value })}
-                  className="w-full p-2 bg-[#ffffff] border border-[#d8c2aa] rounded-lg"
+                  className="w-full p-2 bg-[#ffffff] border border-[#32005c] rounded-lg"
                 />
               </div>
 
@@ -764,7 +829,7 @@ export function CharactersSection() {
                     type="text"
                     value={formData.likes}
                     onChange={(e) => setFormData({ ...formData, likes: e.target.value })}
-                    className="w-full p-2 bg-[#ffffff] border border-[#d8c2aa] rounded-lg"
+                    className="w-full p-2 bg-[#ffffff] border border-[#32005c] rounded-lg"
                   />
                 </div>
                 <div>
@@ -773,7 +838,7 @@ export function CharactersSection() {
                     type="text"
                     value={formData.dislikes}
                     onChange={(e) => setFormData({ ...formData, dislikes: e.target.value })}
-                    className="w-full p-2 bg-[#ffffff] border border-[#d8c2aa] rounded-lg"
+                    className="w-full p-2 bg-[#ffffff] border border-[#32005c] rounded-lg"
                   />
                 </div>
               </div>
@@ -784,7 +849,7 @@ export function CharactersSection() {
                   type="text"
                   value={formData.motto}
                   onChange={(e) => setFormData({ ...formData, motto: e.target.value })}
-                  className="w-full p-2 bg-[#ffffff] border border-[#d8c2aa] rounded-lg"
+                  className="w-full p-2 bg-[#ffffff] border border-[#32005c] rounded-lg"
                 />
               </div>
 
@@ -794,7 +859,7 @@ export function CharactersSection() {
                   rows={2}
                   value={formData.shortNote}
                   onChange={(e) => setFormData({ ...formData, shortNote: e.target.value })}
-                  className="w-full p-2 bg-[#ffffff] border border-[#d8c2aa] rounded-lg"
+                  className="w-full p-2 bg-[#ffffff] border border-[#32005c] rounded-lg"
                 />
               </div>
 
@@ -808,7 +873,7 @@ export function CharactersSection() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#385338] hover:bg-[#2c422c] text-white rounded-xl font-bold flex items-center gap-1"
+                  className="px-4 py-2 bg-[#32005c] hover:bg-[#f3ccde] text-white rounded-xl font-bold flex items-center gap-1"
                 >
                   <Check size={14} /> Guardar
                 </button>
@@ -818,10 +883,10 @@ export function CharactersSection() {
         </div>
       )}
 
-      {/* Modal de Criar/Editar Relacionamento */}
+      {/* Modal Criar/Editar Relacionamento */}
       {isRelModalOpen && (
         <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#f7eee3] border-2 border-[#d8c2aa] rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
+          <div className="bg-[#f5f5f5] border-2 border-[#32005c] rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
             <div className="flex justify-between items-center border-b border-[#d8c2aa] pb-3">
               <h3 className="font-bold font-serif text-lg text-stone-900">
                 {editingRelId ? 'Editar Relacionamento' : 'Novo Relacionamento'}
@@ -837,9 +902,9 @@ export function CharactersSection() {
                 <select
                   value={relFormData.character1Id}
                   onChange={(e) => setRelFormData({ ...relFormData, character1Id: e.target.value })}
-                  className="w-full p-2 bg-[#ffffff] border border-[#d8c2aa] rounded-lg"
+                  className="w-full p-2 bg-[#ffffff] border border-[#32005c] rounded-lg"
                 >
-                  {characters.map((c) => (
+                  {currentProjectCharacters.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
                     </option>
@@ -852,9 +917,9 @@ export function CharactersSection() {
                 <select
                   value={relFormData.character2Id}
                   onChange={(e) => setRelFormData({ ...relFormData, character2Id: e.target.value })}
-                  className="w-full p-2 bg-[#ffffff] border border-[#d8c2aa] rounded-lg"
+                  className="w-full p-2 bg-[#ffffff] border border-[#32005c] rounded-lg"
                 >
-                  {characters.map((c) => (
+                  {currentProjectCharacters.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.name}
                     </option>
@@ -870,7 +935,7 @@ export function CharactersSection() {
                   required
                   value={relFormData.type}
                   onChange={(e) => setRelFormData({ ...relFormData, type: e.target.value })}
-                  className="w-full p-2 bg-[#ffffff] border border-[#d8c2aa] rounded-lg"
+                  className="w-full p-2 bg-[#ffffff] border border-[#32005c] rounded-lg"
                 />
               </div>
 
@@ -881,7 +946,7 @@ export function CharactersSection() {
                   placeholder="Explique brevemente a relação entre eles..."
                   value={relFormData.description}
                   onChange={(e) => setRelFormData({ ...relFormData, description: e.target.value })}
-                  className="w-full p-2 bg-[#ffffff] border border-[#d8c2aa] rounded-lg"
+                  className="w-full p-2 bg-[#ffffff] border border-[#32005c] rounded-lg"
                 />
               </div>
 
@@ -895,7 +960,7 @@ export function CharactersSection() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#385338] hover:bg-[#2c422c] text-white rounded-xl font-bold flex items-center gap-1"
+                  className="px-4 py-2 bg-[#32005c] hover:bg-[#f3ccde] text-white rounded-xl font-bold flex items-center gap-1"
                 >
                   <Check size={14} /> Guardar
                 </button>

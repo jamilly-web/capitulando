@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Calendar,
   Plus,
@@ -12,6 +12,7 @@ import {
   BookOpen,
   Clock,
 } from 'lucide-react';
+import { useIsolatedStorage } from '@/hooks/useIsolatedStorage';
 
 interface TimelineEvent {
   id: string;
@@ -32,77 +33,17 @@ const DEFAULT_PROJECTS: ProjectMinimal[] = [
   { id: '2', title: 'Segredos de Algures' },
 ];
 
-const DEFAULT_EVENTS: TimelineEvent[] = [
-  {
-    id: 'e1',
-    projectId: '1',
-    yearOrDate: 'Ano 1020',
-    title: 'O Grande Eclipse',
-    characters: 'Anya',
-    description: 'Nascimento sob o sinal dos astros e a revelação da profecia.',
-  },
-  {
-    id: 'e2',
-    projectId: '1',
-    yearOrDate: 'Ano 1038',
-    title: 'Incêndio na Vila',
-    characters: 'Ben Thorne',
-    description: 'Perda dos pais de Ben e encontro inicial com os guardiões.',
-  },
-  {
-    id: 'e3',
-    projectId: '1',
-    yearOrDate: 'Ano 1043',
-    title: 'A Iniciação',
-    characters: 'Anya & Ben',
-    description: 'Entrada oficial na Academia Arcana e juramento de proteção.',
-  },
-];
+// Eventos padrão removidos para iniciar vazio por conta
+const DEFAULT_EVENTS: TimelineEvent[] = [];
 
 export function TimelineSection() {
-  // Carrega lista de projetos do localStorage para vincular à linha do tempo
-  const [projects, setProjects] = useState<ProjectMinimal[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('capitulando_projects');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (parsed.length > 0) {
-            return parsed.map((p: any) => ({ id: p.id, title: p.title }));
-          }
-        } catch (e) {
-          console.error('Erro ao ler projetos do localStorage', e);
-        }
-      }
-    }
-    return DEFAULT_PROJECTS;
-  });
+  // Carrega projetos e eventos isolados da conta ativa
+  const [projects] = useIsolatedStorage<ProjectMinimal[]>('projects', DEFAULT_PROJECTS);
+  const [events, setEvents] = useIsolatedStorage<TimelineEvent[]>('timeline_events', DEFAULT_EVENTS);
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>(
     () => projects[0]?.id || '1'
   );
-
-  // Carrega lista de eventos do localStorage
-  const [events, setEvents] = useState<TimelineEvent[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('capitulando_timeline_events');
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error('Erro ao ler eventos da linha do tempo', e);
-        }
-      }
-    }
-    return DEFAULT_EVENTS;
-  });
-
-  // Salva eventos no localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('capitulando_timeline_events', JSON.stringify(events));
-    }
-  }, [events]);
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -116,7 +57,7 @@ export function TimelineSection() {
   });
 
   // Eventos filtrados para o projeto selecionado
-  const projectEvents = events.filter((e) => e.projectId === selectedProjectId);
+  const projectEvents = events.filter((e) => (e.projectId || '1') === selectedProjectId);
 
   const handleOpenCreate = () => {
     setEditingEventId(null);
@@ -157,7 +98,7 @@ export function TimelineSection() {
         prev.map((item) => (item.id === editingEventId ? newEvent : item))
       );
     } else {
-      setEvents((prev) => [...prev, newEvent]);
+      setEvents((prev) => [newEvent, ...prev]);
     }
 
     setIsModalOpen(false);

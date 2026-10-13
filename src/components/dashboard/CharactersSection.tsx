@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Search,
   Plus,
@@ -22,10 +22,11 @@ import {
   ArrowRight,
   BookOpen,
 } from 'lucide-react';
+import { useIsolatedStorage } from '@/hooks/useIsolatedStorage';
 
 interface Character {
   id: string;
-  projectId: string; // Associação ao Projeto
+  projectId: string;
   name: string;
   role: 'Protagonista' | 'Aliado' | 'Antagonista' | 'Secundário';
   age: number;
@@ -44,7 +45,7 @@ interface Character {
 
 interface Relationship {
   id: string;
-  projectId: string; // Associação ao Projeto
+  projectId: string;
   character1Id: string;
   character2Id: string;
   type: string;
@@ -61,138 +62,23 @@ const DEFAULT_PROJECTS: ProjectMinimal[] = [
   { id: '2', title: 'Segredos de Algures' },
 ];
 
-const DEFAULT_CHARACTERS: Character[] = [
-  {
-    id: '1',
-    projectId: '1',
-    name: 'Anya Silva',
-    role: 'Protagonista',
-    age: 24,
-    height: '1,68 m',
-    weight: '58 kg',
-    zodiac: 'Peixes ♓',
-    mbti: 'INFJ',
-    imageUrl:
-      'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500&auto=format&fit=crop&q=80',
-    appearance: [
-      'Cabelos castanhos ondulados',
-      'Olhos expressivos e castanhos',
-      'Estilo confortável e vintage',
-      'Sempre carrega um caderno',
-    ],
-    likes: ['Café expresso', 'Livros antigos', 'Fotografia analógica'],
-    dislikes: ['Falso moralismo', 'Lugares muito barulhentos'],
-    drinks: ['Café preto', 'Chá de camomila'],
-    motto: 'A verdade é o único caminho para a liberdade.',
-    shortNote:
-      'Gosta de observações calmas. Muito leal aos amigos próximos, mas guarda segredos profundos.',
-  },
-  {
-    id: '2',
-    projectId: '1',
-    name: 'Park Jimin',
-    role: 'Aliado',
-    age: 25,
-    height: '1,82 m',
-    weight: '75 kg',
-    zodiac: 'Áries ♈',
-    mbti: 'ESTP',
-    imageUrl:
-      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&auto=format&fit=crop&q=80',
-    appearance: [
-      'Cabelo curto e alinhado',
-      'Olhos castanhos claros',
-      'Porte atlético',
-    ],
-    likes: ['Desportos radicais', 'Comida apimentada', 'Gatos'],
-    dislikes: ['Mentiras', 'Inação/Falta de atitude'],
-    drinks: ['Café gelado', 'Limonada'],
-    motto: 'Ação rápida resolve quase tudo.',
-    shortNote:
-      'Protege os seus a qualquer custo. Tende a agir antes de pensar, mas tem um coração enorme.',
-  },
-];
-
-const DEFAULT_RELATIONSHIPS: Relationship[] = [
-  {
-    id: 'r1',
-    projectId: '1',
-    character1Id: '1',
-    character2Id: '2',
-    type: 'Confiança Mútua',
-    description: 'Conhecem-se desde a infância e confiam a vida um ao outro.',
-  },
-];
+// Fichas padrão removidas (começa vazio para cada conta)
+const DEFAULT_CHARACTERS: Character[] = [];
+const DEFAULT_RELATIONSHIPS: Relationship[] = [];
 
 export function CharactersSection() {
   const [activeTab, setActiveTab] = useState<'characters' | 'relationships'>('characters');
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<string>('Todos');
 
-  // Carrega Lista de Projetos do localStorage
-  const [projects, setProjects] = useState<ProjectMinimal[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('capitulando_projects');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          if (parsed.length > 0) {
-            return parsed.map((p: any) => ({ id: p.id, title: p.title }));
-          }
-        } catch (e) {
-          console.error('Erro ao ler projetos do localStorage', e);
-        }
-      }
-    }
-    return DEFAULT_PROJECTS;
-  });
+  // Armazenamento totalmente isolado por sessão/utilizador logado
+  const [projects] = useIsolatedStorage<ProjectMinimal[]>('projects', DEFAULT_PROJECTS);
+  const [characters, setCharacters] = useIsolatedStorage<Character[]>('characters', DEFAULT_CHARACTERS);
+  const [relationships, setRelationships] = useIsolatedStorage<Relationship[]>('relationships', DEFAULT_RELATIONSHIPS);
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>(
     () => projects[0]?.id || '1'
   );
-
-  // Estado dos Personagens (localStorage)
-  const [characters, setCharacters] = useState<Character[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('capitulando_characters');
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error('Erro ao ler personagens do localStorage', e);
-        }
-      }
-    }
-    return DEFAULT_CHARACTERS;
-  });
-
-  // Estado dos Relacionamentos (localStorage)
-  const [relationships, setRelationships] = useState<Relationship[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('capitulando_relationships');
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          console.error('Erro ao ler relacionamentos do localStorage', e);
-        }
-      }
-    }
-    return DEFAULT_RELATIONSHIPS;
-  });
-
-  // Gravar no localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('capitulando_characters', JSON.stringify(characters));
-    }
-  }, [characters]);
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('capitulando_relationships', JSON.stringify(relationships));
-    }
-  }, [relationships]);
 
   // Modais
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -229,7 +115,7 @@ export function CharactersSection() {
 
   const categories = ['Todos', 'Protagonista', 'Aliado', 'Antagonista', 'Secundário'];
 
-  // Personagens e Relacionamentos pertencentes APENAS ao projeto ativo
+  // Personagens e Relacionamentos pertencentes APENAS ao projeto selecionado na conta ativa
   const currentProjectCharacters = characters.filter((c) => (c.projectId || '1') === selectedProjectId);
   const currentProjectRelationships = relationships.filter((r) => (r.projectId || '1') === selectedProjectId);
 
@@ -808,7 +694,7 @@ export function CharactersSection() {
                   type="text"
                   value={formData.imageUrl}
                   onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                  className="w-full p-2 bg-[#fffff] border border-[#32005c] rounded-lg"
+                  className="w-full p-2 bg-[#ffffff] border border-[#32005c] rounded-lg"
                 />
               </div>
 

@@ -10,7 +10,6 @@ export default function LoginPage() {
 
   function handleLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     setErro("");
 
     if (!email || !senha) {
@@ -18,63 +17,49 @@ export default function LoginPage() {
       return;
     }
 
-      if (!email.includes("@")) {
+    if (!email.includes("@")) {
       setErro("Digite um e-mail válido.");
       return;
     }
 
-    console.log("Login:", {
-      email,
-      senha,
-    });
+    // Criar um identificador único baseado no e-mail inserido
+    const userId = email.trim().toLowerCase().replace(/[^a-z0-9]/g, "_");
+
+    if (typeof window !== "undefined") {
+      // Definir a sessão ativa do utilizador
+      localStorage.setItem("capitulando_active_profile_id", userId);
+      localStorage.setItem("capitulando_logged_user", userId);
+
+      // Redirecionamento imediato para a página inicial
+      window.location.href = "/";
+    }
   }
 
   return (
     <main className="flex min-h-screen flex-col md:flex-row">
-
-      {}
       <section className="relative flex w-full items-center justify-center overflow-hidden bg-[#D8C4DC] md:w-1/2">
-
-        {/* Decorações do fundo */}
         <div className="absolute -left-20 -top-20 h-64 w-64 rounded-full bg-[#C4A9CE] opacity-40" />
-
         <div className="absolute -bottom-24 -right-16 h-72 w-72 rounded-full bg-[#B997C2] opacity-30" />
-
-        {}
-        <div className="relative flex flex-col items-center text-center">
-
-          <div className="mb-6 text-8xl">
-            📚
-          </div>
-
-          <div className="mb-5 text-7xl">
-            🦉
-          </div>
-
-          <h1 className="text-5xl font-bold text-[#4B2858]">
-            CapituLando
-          </h1>
-
+        <div className="relative flex flex-col items-center text-center p-6">
+          <div className="mb-6 text-8xl">📚</div>
+          <div className="mb-5 text-7xl">🦉</div>
+          <h1 className="text-5xl font-bold text-[#4B2858]">CapituLando</h1>
           <p className="mt-4 max-w-md text-lg text-[#5D4266]">
-            Toda história começa com uma palavra.
+            Toda história começa com uma palavra. Faça login para continuar.
           </p>
         </div>
       </section>
 
-      {}
       <section className="flex w-full items-center justify-center bg-[#F5F0E8] p-8 md:w-1/2">
         <div className="w-full max-w-md rounded-[2rem] border border-[#D8C4DC] bg-[#FFFDF9] p-10 shadow-[0_15px_40px_rgba(75,40,88,0.12)]">
-
-          {}
           <h2 className="text-3xl font-bold text-[#4B2858]">
             Bem-vindo de volta!
           </h2>
 
           <p className="mt-2 text-[#705979]">
-            Continue escrevendo sua história.
+            Entre com sua conta para acessar seu escritório.
           </p>
 
-          {}
           {erro && (
             <p
               role="alert"
@@ -84,15 +69,8 @@ export default function LoginPage() {
             </p>
           )}
 
-          {}
-          <form
-            className="mt-8"
-            onSubmit={handleLogin}
-          >
-
-            {}
+          <form className="mt-8" onSubmit={handleLogin}>
             <div className="mb-5">
-
               <label
                 htmlFor="email"
                 className="mb-2 block text-sm font-semibold text-[#4B2858]"
@@ -111,9 +89,7 @@ export default function LoginPage() {
               />
             </div>
 
-            {}
             <div className="mb-3">
-
               <label
                 htmlFor="senha"
                 className="mb-2 block text-sm font-semibold text-[#4B2858]"
@@ -122,7 +98,6 @@ export default function LoginPage() {
               </label>
 
               <div className="relative">
-
                 <input
                   type={mostrarSenha ? "text" : "password"}
                   id="senha"
@@ -136,11 +111,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setMostrarSenha(!mostrarSenha)}
-                  aria-label={
-                    mostrarSenha
-                      ? "Ocultar senha"
-                      : "Mostrar senha"
-                  }
+                  aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[#704B7C]"
                 >
                   {mostrarSenha ? "🙈" : "👁️"}
@@ -148,9 +119,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {}
             <div className="mb-6 text-right">
-
               <Link
                 href="/recuperar-senha"
                 className="text-sm text-[#704B7C] hover:underline"
@@ -159,7 +128,6 @@ export default function LoginPage() {
               </Link>
             </div>
 
-            {}
             <button
               type="submit"
               className="w-full rounded-xl bg-[#704B7C] py-3 font-semibold text-white transition hover:bg-[#5B3A67]"
@@ -168,11 +136,8 @@ export default function LoginPage() {
             </button>
           </form>
 
-          {}
           <p className="mt-6 text-center text-sm text-[#705979]">
-
             Ainda não possui uma conta?{" "}
-
             <Link
               href="/cadastro"
               className="font-semibold text-[#704B7C] hover:underline"

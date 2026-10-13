@@ -1,42 +1,323 @@
 'use client';
 
-import React from 'react';
-import { Target, Plus } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  Target,
+  Plus,
+  Edit2,
+  Trash2,
+  CheckCircle2,
+  Circle,
+  X,
+  Check,
+} from 'lucide-react';
+import { useIsolatedStorage } from '@/hooks/useIsolatedStorage';
+
+interface Goal {
+  id: string;
+  title: string;
+  current: number;
+  target: number;
+  unit: string;
+  completed: boolean;
+}
+
+// Lista limpa por padrão (sem metas pré-salvas)
+const DEFAULT_GOALS: Goal[] = [];
 
 export function GoalsSection() {
-  const goals = [
-    { title: 'Concluir Rascunho do Livro 1', target: '100 capitulos', current: '75 capítulos', progress: 75 },
-    { title: 'Fichas de Personagens Secundários', target: '8 fichas', current: '5 fichas', progress: 62 },
-  ];
+  // Utiliza o hook isolado para garantir total independência entre contas
+  const [goals, setGoals] = useIsolatedStorage<Goal[]>('goals', DEFAULT_GOALS);
+
+  // Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  const [formData, setFormData] = useState({
+    title: '',
+    current: 0,
+    target: 10,
+    unit: 'capítulos',
+  });
+
+  const handleOpenCreate = () => {
+    setEditingId(null);
+    setFormData({
+      title: '',
+      current: 0,
+      target: 10,
+      unit: 'capítulos',
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenEdit = (goal: Goal) => {
+    setEditingId(goal.id);
+    setFormData({
+      title: goal.title,
+      current: goal.current,
+      target: goal.target,
+      unit: goal.unit,
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const currentVal = Number(formData.current) || 0;
+    const targetVal = Number(formData.target) || 1;
+    const isCompleted = currentVal >= targetVal;
+
+    if (editingId) {
+      setGoals((prev) =>
+        prev.map((g) =>
+          g.id === editingId
+            ? {
+                ...g,
+                title: formData.title || 'Meta sem título',
+                current: currentVal,
+                target: targetVal,
+                unit: formData.unit || 'itens',
+                completed: isCompleted,
+              }
+            : g
+        )
+      );
+    } else {
+      const newGoal: Goal = {
+        id: Date.now().toString(),
+        title: formData.title || 'Nova Meta',
+        current: currentVal,
+        target: targetVal,
+        unit: formData.unit || 'itens',
+        completed: isCompleted,
+      };
+      setGoals((prev) => [...prev, newGoal]);
+    }
+
+    setIsModalOpen(false);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Tem a certeza de que deseja eliminar esta meta?')) {
+      setGoals((prev) => prev.filter((g) => g.id !== id));
+    }
+  };
+
+  const handleToggleComplete = (id: string) => {
+    setGoals((prev) =>
+      prev.map((g) => {
+        if (g.id === id) {
+          const nextCompleted = !g.completed;
+          return {
+            ...g,
+            completed: nextCompleted,
+            current: nextCompleted ? g.target : g.current,
+          };
+        }
+        return g;
+      })
+    );
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center bg-[#f7eee3] p-4 rounded-xl border border-[#d8c2aa]">
+    <div className="space-y-6 font-sans">
+      {/* Cabeçalho */}
+      <div className="bg-[#f3ccde]/60 p-5 rounded-2xl border-2 border-[#4b1d3f]/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shadow-sm">
         <div className="flex items-center gap-3">
-          <Target className="text-[#7a5230]" size={24} />
+          <div className="p-3 bg-[#f3ccde] text-[#4b1d3f] rounded-xl border border-[#4b1d3f]/30">
+            <Target size={28} />
+          </div>
           <div>
-            <h2 className="text-xl font-serif font-bold text-stone-900">Metas & Desafios</h2>
-            <p className="text-xs text-stone-600">Acompanhe seus objetivos literários.</p>
+            <h2 className="text-xl font-bold font-serif text-stone-900">
+              Metas & Desafios
+            </h2>
+            <p className="text-xs text-stone-600">
+              Acompanhe, atualize e conquiste os seus objetivos literários.
+            </p>
           </div>
         </div>
-        <button className="bg-[#385338] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#2c422c] flex items-center gap-2">
-          <Plus size={16} /> Nova Meta
+
+        <button
+          onClick={handleOpenCreate}
+          className="bg-[#4b1d3f] hover:bg-[#38142f] text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95"
+        >
+          <Plus size={16} />
+          <span>Nova Meta</span>
         </button>
       </div>
 
+      {/* Lista de Metas */}
       <div className="space-y-4">
-        {goals.map((goal, i) => (
-          <div key={i} className="bg-[#f7eee3] border border-[#d8c2aa] rounded-xl p-5 shadow-sm space-y-2">
-            <div className="flex justify-between items-center">
-              <h3 className="font-bold text-stone-900 font-serif text-md">{goal.title}</h3>
-              <span className="text-xs text-stone-600">{goal.current} / {goal.target}</span>
+        {goals.map((goal) => {
+          const percentage = Math.min(
+            Math.round((goal.current / (goal.target || 1)) * 100),
+            100
+          );
+
+          return (
+            <div
+              key={goal.id}
+              className={`bg-white border-2 rounded-2xl p-5 shadow-sm space-y-3 transition-all ${
+                goal.completed ? 'border-emerald-600/50 bg-emerald-50/20' : 'border-[#4b1d3f]/20'
+              }`}
+            >
+              <div className="flex justify-between items-start gap-4">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => handleToggleComplete(goal.id)}
+                    className="text-[#4b1d3f] hover:scale-110 transition-transform"
+                    title={goal.completed ? 'Marcar como pendente' : 'Marcar como concluída'}
+                  >
+                    {goal.completed ? (
+                      <CheckCircle2 size={24} className="text-emerald-700 fill-emerald-100" />
+                    ) : (
+                      <Circle size={24} className="text-stone-400" />
+                    )}
+                  </button>
+                  <div>
+                    <h3
+                      className={`text-sm font-bold font-serif ${
+                        goal.completed ? 'line-through text-stone-400' : 'text-stone-900'
+                      }`}
+                    >
+                      {goal.title}
+                    </h3>
+                    <span className="text-[10px] text-stone-500 font-medium">
+                      Progresso: {goal.current} / {goal.target} {goal.unit} ({percentage}%)
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => handleOpenEdit(goal)}
+                    className="p-1.5 text-stone-500 hover:text-stone-900 hover:bg-[#f3ccde]/40 rounded-lg transition-colors"
+                    title="Editar Meta"
+                  >
+                    <Edit2 size={15} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(goal.id)}
+                    className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Eliminar Meta"
+                  >
+                    <Trash2 size={15} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Barra de Progresso */}
+              <div className="space-y-1">
+                <div className="w-full h-3 bg-stone-100 rounded-full overflow-hidden border border-stone-200">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      goal.completed ? 'bg-emerald-600' : 'bg-[#4b1d3f]'
+                    }`}
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="w-full h-3 bg-stone-200 rounded-full overflow-hidden">
-              <div className="h-full bg-[#385338] rounded-full" style={{ width: `${goal.progress}%` }} />
-            </div>
+          );
+        })}
+
+        {goals.length === 0 && (
+          <div className="text-center py-12 bg-[#f3ccde]/30 rounded-3xl border-2 border-dashed border-[#4b1d3f]/30 text-stone-500 space-y-2">
+            <Target size={36} className="mx-auto text-stone-400" />
+            <p className="text-sm font-semibold">Nenhuma meta registada.</p>
+            <p className="text-xs text-stone-400">
+              Clique em "Nova Meta" para definir os seus objetivos de escrita.
+            </p>
           </div>
-        ))}
+        )}
       </div>
+
+      {/* Modal Criar / Editar Meta */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[#f3ccde] border-2 border-[#4b1d3f]/30 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
+            <div className="flex justify-between items-center border-b border-[#4b1d3f]/20 pb-3">
+              <h3 className="font-bold font-serif text-lg text-stone-900">
+                {editingId ? 'Editar Meta' : 'Nova Meta / Desafio'}
+              </h3>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-stone-600 hover:text-stone-900"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSave} className="space-y-3 text-xs">
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Título da Meta</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex: Escrever o Primeiro Capítulo"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="w-full p-2.5 bg-white border border-[#4b1d3f]/30 rounded-xl text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#4b1d3f]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Valor Atual</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.current}
+                    onChange={(e) => setFormData({ ...formData, current: Number(e.target.value) })}
+                    className="w-full p-2.5 bg-white border border-[#4b1d3f]/30 rounded-xl text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#4b1d3f]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-stone-700 mb-1">Valor Alvo (Meta)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    value={formData.target}
+                    onChange={(e) => setFormData({ ...formData, target: Number(e.target.value) })}
+                    className="w-full p-2.5 bg-white border border-[#4b1d3f]/30 rounded-xl text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#4b1d3f]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-bold text-stone-700 mb-1">Unidade</label>
+                <input
+                  type="text"
+                  placeholder="Ex: capítulos, palavras, fichas, páginas"
+                  value={formData.unit}
+                  onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                  className="w-full p-2.5 bg-white border border-[#4b1d3f]/30 rounded-xl text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#4b1d3f]"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-[#4b1d3f]/20">
+                <button
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 bg-stone-200 hover:bg-stone-300 text-stone-800 rounded-xl font-semibold"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-[#4b1d3f] hover:bg-[#38142f] text-white rounded-xl font-bold flex items-center gap-1 shadow-sm"
+                >
+                  <Check size={16} /> Salvar Meta
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

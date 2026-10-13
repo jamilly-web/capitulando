@@ -1,7 +1,21 @@
 'use client';
 
 import React from 'react';
-import { LayoutDashboard, BookOpen, Users, Calendar, Globe, Feather, Target, Lightbulb } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useActiveProfile } from '@/hooks/useActiveProfile';
+import {
+  LayoutDashboard,
+  BookOpen,
+  Users,
+  Calendar,
+  Globe,
+  Feather,
+  Target,
+  Lightbulb,
+  Sparkles,
+  User,
+  LogOut,
+} from 'lucide-react';
 
 interface SidebarProps {
   activeTab: string;
@@ -9,46 +23,68 @@ interface SidebarProps {
 }
 
 export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
+  const router = useRouter();
+  const { currentProfile } = useActiveProfile();
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      // Limpa as chaves da sessão
+      localStorage.removeItem('capitulando_active_profile_id');
+      localStorage.removeItem('capitulando_logged_user');
+      window.location.href = '/login';
+    }
+  };
+
   const menuItems = [
     { id: 'painel', label: 'Painel Principal', icon: LayoutDashboard },
-    { id: 'projetos', label: 'Projetos/Livros', icon: BookOpen },
+    { id: 'projetos', label: 'Projetos / Livros', icon: BookOpen },
     { id: 'personagens', label: 'Personagens', icon: Users },
-    { id: 'timeline', label: 'Idade/Timeline', icon: Calendar },
-    { id: 'universo', label: 'Universo/Ambientação', icon: Globe },
-    { id: 'escrita', label: 'Escrita', icon: Feather },
-    { id: 'metas', label: 'Metas', icon: Target },
-    { id: 'ideias', label: 'Ideias', icon: Lightbulb },
+    { id: 'timeline', label: 'Timeline / Idade', icon: Calendar },
+    { id: 'universo', label: 'Universo / Mundo', icon: Globe },
+    { id: 'escrita', label: 'Espaço de Escrita', icon: Feather },
+    { id: 'metas', label: 'Metas & Desafios', icon: Target },
+    { id: 'ideias', label: 'Bloco de Ideias', icon: Lightbulb },
+    { id: 'perfil', label: 'Perfil do Autor', icon: User },
   ];
 
   return (
-    <aside className="w-64 bg-cozy-green-dark text-stone-100 p-4 flex flex-col justify-between min-h-screen border-r border-stone-700/30">
+    <aside className="w-64 bg-[#4b1d3f] dark:bg-[#1a1321] text-stone-100 flex flex-col justify-between p-4 min-h-screen border-r border-[#38142f] dark:border-[#382b47] shadow-lg font-sans transition-colors duration-300 shrink-0">
       <div className="space-y-6">
-        {/* Logo / Header */}
-        <div className="bg-amber-900/40 border border-amber-500/30 p-3 rounded-xl text-center">
-          <span className="text-xs uppercase tracking-widest text-amber-200/80 block font-semibold">
-            BEM VINDO AO
-          </span>
-          <h1 className="text-xl font-serif font-bold text-amber-100 tracking-wide mt-0.5">
+        <div className="bg-[#38142f]/80 dark:bg-[#221a2b] p-4 rounded-2xl border border-[#f3ccde]/20 text-center space-y-1 shadow-inner">
+          <div className="flex items-center justify-center gap-2 text-[#f3ccde] dark:text-pink-300">
+            <Sparkles size={18} />
+            <span className="text-[10px] font-bold tracking-widest uppercase opacity-90">
+              ESCRITÓRIO LITERÁRIO
+            </span>
+          </div>
+          <h1 className="text-2xl font-bold font-serif text-white tracking-wide">
             CapituLando
           </h1>
         </div>
 
-        {/* Menu Navigation */}
-        <nav className="space-y-1">
+        <nav className="space-y-1.5">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
+
             return (
               <button
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl text-xs font-bold transition-all duration-200 text-left ${
                   isActive
-                    ? 'bg-cozy-card text-stone-900 shadow-sm'
-                    : 'text-stone-200 hover:bg-cozy-green-light/50'
+                    ? 'bg-[#fcf8f2] text-[#4b1d3f] shadow-md dark:bg-pink-800 dark:text-white font-extrabold translate-x-1'
+                    : 'text-stone-200 hover:bg-[#38142f]/60 dark:hover:bg-[#281e33] hover:text-white'
                 }`}
               >
-                <Icon size={18} />
+                <Icon
+                  size={18}
+                  className={
+                    isActive
+                      ? 'text-[#4b1d3f] dark:text-white'
+                      : 'text-pink-200/70 dark:text-stone-400'
+                  }
+                />
                 <span>{item.label}</span>
               </button>
             );
@@ -56,15 +92,53 @@ export function Sidebar({ activeTab, setActiveTab }: SidebarProps) {
         </nav>
       </div>
 
-      {/* Perfil no fundo da barra lateral */}
-      <div className="bg-cozy-green-light/40 border border-stone-600/30 p-3 rounded-xl flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-amber-200 text-cozy-brown font-bold flex items-center justify-center text-sm shadow-inner">
-          A
+      <div className="space-y-2">
+        <div
+          onClick={() => setActiveTab('perfil')}
+          className={`p-3.5 rounded-2xl border flex items-center gap-3 shadow-sm cursor-pointer transition-all duration-200 ${
+            activeTab === 'perfil'
+              ? 'bg-[#fcf8f2] text-[#4b1d3f] border-white dark:bg-pink-800 dark:text-white'
+              : 'bg-[#38142f]/90 hover:bg-[#38142f] dark:bg-[#221a2b] dark:hover:bg-[#2a2035] border-[#f3ccde]/20'
+          }`}
+          title="Ver Perfil do Autor"
+        >
+          <div
+            className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold font-serif text-lg shrink-0 border ${
+              activeTab === 'perfil'
+                ? 'bg-[#4b1d3f] text-white border-[#4b1d3f] dark:bg-white dark:text-pink-900'
+                : 'bg-[#f3ccde] text-[#4b1d3f] border-[#f3ccde]/40 dark:bg-pink-900 dark:text-pink-100'
+            }`}
+          >
+            {currentProfile.name.charAt(0).toUpperCase()}
+          </div>
+          <div className="overflow-hidden text-xs space-y-0.5">
+            <h4
+              className={`font-bold truncate font-serif ${
+                activeTab === 'perfil' ? 'text-[#4b1d3f] dark:text-white' : 'text-white'
+              }`}
+            >
+              {currentProfile.name}
+            </h4>
+            <p
+              className={`text-[10px] italic truncate ${
+                activeTab === 'perfil'
+                  ? 'text-[#4b1d3f]/80 dark:text-pink-100'
+                  : 'text-pink-200/80 dark:text-stone-400'
+              }`}
+            >
+              Conta Ativa
+            </p>
+          </div>
         </div>
-        <div>
-          <h4 className="text-xs font-bold text-stone-100">Advriqum</h4>
-          <p className="text-[10px] text-stone-300 italic">"Pense em um enredo forte..."</p>
-        </div>
+
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-2 p-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-200 hover:text-white border border-red-500/20 rounded-xl text-xs font-bold transition-all"
+          title="Trocar de conta"
+        >
+          <LogOut size={16} />
+          <span>Sair / Trocar de Conta</span>
+        </button>
       </div>
     </aside>
   );

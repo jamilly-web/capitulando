@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function CadastroPage() {
+  const router = useRouter();
+
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -16,7 +19,6 @@ export default function CadastroPage() {
 
   function handleCadastro(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-
     setErro("");
 
     if (!nome || !email || !senha || !confirmarSenha) {
@@ -39,17 +41,45 @@ export default function CadastroPage() {
       return;
     }
 
-    console.log("Cadastro:", {
-      nome,
-      email,
-      senha,
-    });
+    // Criar um ID único para o novo perfil com base no timestamp
+    const newProfileId = `profile_${Date.now()}`;
+    const newProfile = {
+      id: newProfileId,
+      name: nome,
+      penName: nome,
+      email: email,
+    };
+
+    // Salvar o novo perfil na lista de perfis do localStorage
+    const existingProfiles = JSON.parse(
+      localStorage.getItem("capitulando_custom_profiles") || "[]"
+    );
+    existingProfiles.push(newProfile);
+    localStorage.setItem("capitulando_custom_profiles", JSON.stringify(existingProfiles));
+
+    // Inicializar o perfil de autor isolado para este novo utilizador
+    const initialAuthorProfile = {
+      name: nome,
+      penName: nome,
+      email: email,
+      bio: "Novo autor a escrever a sua primeira grande história no CapituLando.",
+      quote: "Escrever é criar um novo mundo.",
+      favoriteGenres: ["Fantasia", "Ficção"],
+      websiteUrl: "",
+      avatarUrl: "",
+    };
+    localStorage.setItem(
+      `capitulando_${newProfileId}_author_profile`,
+      JSON.stringify(initialAuthorProfile)
+    );
+
+    // Redirecionar para a página de login após o cadastro bem-sucedido
+    router.push("/login");
   }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#F5F0E8] p-6">
       <div className="w-full max-w-md rounded-[2rem] border border-[#D8C4DC] bg-[#FFFDF9] p-10 shadow-[0_15px_40px_rgba(75,40,88,0.12)]">
-        {}
         <h1 className="text-3xl font-bold text-[#4B2858]">
           Comece sua história
         </h1>
@@ -58,24 +88,18 @@ export default function CadastroPage() {
           Crie sua conta e comece a escrever.
         </p>
 
-        {}
         {erro && (
           <p className="mt-4 rounded-xl bg-red-50 p-3 text-sm text-red-700">
             {erro}
           </p>
         )}
 
-        {}
-        <form
-          className="mt-8"
-          onSubmit={handleCadastro}
-        >
-
-          {}
+        <form className="mt-8" onSubmit={handleCadastro}>
           <div className="mb-5">
             <label
               htmlFor="nome"
-              className="mb-2 block text-sm font-semibold text-[#4B2858]">
+              className="mb-2 block text-sm font-semibold text-[#4B2858]"
+            >
               Nome de usuário
             </label>
 
@@ -89,11 +113,11 @@ export default function CadastroPage() {
             />
           </div>
 
-          {}
           <div className="mb-5">
             <label
               htmlFor="email"
-              className="mb-2 block text-sm font-semibold text-[#4B2858]">
+              className="mb-2 block text-sm font-semibold text-[#4B2858]"
+            >
               E-mail
             </label>
 
@@ -107,16 +131,15 @@ export default function CadastroPage() {
             />
           </div>
 
-          {}
           <div className="mb-5">
             <label
               htmlFor="senha"
-              className="mb-2 block text-sm font-semibold text-[#4B2858]">
+              className="mb-2 block text-sm font-semibold text-[#4B2858]"
+            >
               Senha
             </label>
 
             <div className="relative">
-
               <input
                 type={mostrarSenha ? "text" : "password"}
                 id="senha"
@@ -130,7 +153,8 @@ export default function CadastroPage() {
                 type="button"
                 onClick={() => setMostrarSenha(!mostrarSenha)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-[#704B7C]"
-                aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}>
+                aria-label={mostrarSenha ? "Ocultar senha" : "Mostrar senha"}
+              >
                 {mostrarSenha ? "🙈" : "👁️"}
               </button>
             </div>
@@ -140,16 +164,15 @@ export default function CadastroPage() {
             </p>
           </div>
 
-          {}
           <div className="mb-6">
             <label
               htmlFor="confirmarSenha"
-              className="mb-2 block text-sm font-semibold text-[#4B2858]">
+              className="mb-2 block text-sm font-semibold text-[#4B2858]"
+            >
               Confirmar senha
             </label>
 
             <div className="relative">
-
               <input
                 type={mostrarConfirmarSenha ? "text" : "password"}
                 id="confirmarSenha"
@@ -169,27 +192,27 @@ export default function CadastroPage() {
                   mostrarConfirmarSenha
                     ? "Ocultar confirmação de senha"
                     : "Mostrar confirmação de senha"
-                }>
+                }
+              >
                 {mostrarConfirmarSenha ? "🙈" : "👁️"}
               </button>
             </div>
           </div>
 
-          {}
           <button
             type="submit"
-            className="w-full rounded-xl bg-[#704B7C] py-3 font-semibold text-white transition hover:bg-[#5B3A67]">
+            className="w-full rounded-xl bg-[#704B7C] py-3 font-semibold text-white transition hover:bg-[#5B3A67]"
+          >
             Criar conta
           </button>
         </form>
 
-        {}
         <p className="mt-6 text-center text-sm text-[#705979]">
           Já possui uma conta?{" "}
-
           <Link
             href="/login"
-            className="font-semibold text-[#704B7C] hover:underline">
+            className="font-semibold text-[#704B7C] hover:underline"
+          >
             Entrar
           </Link>
         </p>

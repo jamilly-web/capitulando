@@ -26,9 +26,28 @@ export default function LoginPage() {
     const userId = email.trim().toLowerCase().replace(/[^a-z0-9]/g, "_");
 
     if (typeof window !== "undefined") {
-      // Definir a sessão ativa do utilizador
+      // 1. Definir a sessão ativa do utilizador
       localStorage.setItem("capitulando_active_profile_id", userId);
       localStorage.setItem("capitulando_logged_user", userId);
+
+      // 2. Verificar se existe um perfil customizado guardado para este e-mail
+      const existingProfiles = JSON.parse(
+        localStorage.getItem("capitulando_custom_profiles") || "[]"
+      );
+      
+      const foundProfile = existingProfiles.find(
+        (p: { email: string; name: string }) => p.email.toLowerCase() === email.trim().toLowerCase()
+      );
+
+      if (foundProfile) {
+        // Se encontrou o perfil criado no cadastro, guarda o nome correto para as boas-vindas
+        localStorage.setItem("capitulando_user_name", foundProfile.name);
+      } else {
+        // Fallback: Se não encontrar, extrai um nome amigável do e-mail (ex: joao@email.com -> Joao)
+        const defaultName = email.split("@")[0];
+        const formattedName = defaultName.charAt(0).toUpperCase() + defaultName.slice(1);
+        localStorage.setItem("capitulando_user_name", formattedName);
+      }
 
       // Redirecionamento imediato para a página inicial
       window.location.href = "/";

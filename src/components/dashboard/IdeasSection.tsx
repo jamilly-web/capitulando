@@ -27,7 +27,7 @@ const SUGGESTIONS_DATABASE: Record<string, { names: string[]; personalities: str
   Fantasia: {
     names: ['Aurelius Vance', 'Elowen Vale', 'Kaelen Vane', 'Thalia Solis', 'Zephyr Nightshade'],
     personalities: ['Guardião estóico com medo secreto de falhar.', 'Mago prodígio impulsivo que atua sem pensar.'],
-    worlds: ['Vales Sussurrantes: Floresta onde as árvores guardam memórias.', 'Cidada de Quartzo: Fortaleza escavada numa montanha de cristais.'],
+    worlds: ['Vales Sussurrantes: Floresta onde as árvores guardam memórias.', 'Cidade de Quartzo: Fortaleza escavada numa montanha de cristais.'],
     rules: ['A magia exige um sacrifício proporcional à sua intensidade.', 'Espelhos filtram seres espirituais.'],
   },
   Mistério: {
@@ -107,103 +107,109 @@ export function IdeasSection() {
   };
 
   return (
-    <div className="space-y-6 font-sans">
-      <div className="bg-[#f7eee3] p-5 rounded-2xl border-2 border-[#d8c2aa] flex flex-col md:flex-row justify-between items-center gap-4 shadow-md">
+    <div className="space-y-6 font-sans text-stone-900 dark:text-stone-100">
+      {/* CABEÇALHO */}
+      <div className="bg-[#FCF8F2] dark:bg-[#1a1120] p-5 rounded-3xl border border-[#4b1d3f]/20 dark:border-[#3d224d] flex flex-col md:flex-row justify-between items-center gap-4 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-[#ebd9c6] text-[#385338] rounded-xl border border-[#d8c2aa]"><Lightbulb size={28} /></div>
+          <div className="p-3 bg-[#f3ccde]/40 dark:bg-[#281832] text-[#4b1d3f] dark:text-pink-300 rounded-2xl border border-[#4b1d3f]/20 dark:border-[#3d224d]">
+            <Lightbulb size={24} />
+          </div>
           <div>
-            <h2 className="text-xl font-bold font-serif text-stone-900">Bloco de Ideias & Gerador Criativo</h2>
-            <p className="text-xs text-stone-600">Anote pensamentos e obtenha inspiração automática.</p>
+            <h2 className="text-xl font-bold font-serif text-stone-900 dark:text-stone-100">Bloco de Ideias & Gerador Criativo</h2>
+            <p className="text-xs text-stone-600 dark:text-stone-300">Anote pensamentos e obtenha inspiração automática.</p>
           </div>
         </div>
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-[#d8c2aa] shadow-sm flex-1 md:flex-none">
-            <BookOpen size={16} className="text-[#385338]" />
-            <select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} className="bg-transparent text-xs font-bold text-stone-800 focus:outline-none cursor-pointer">
-              {projects.map((p) => <option key={p.id} value={p.id}>{p.title} ({p.genre || 'Fantasia'})</option>)}
+        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
+          <div className="flex items-center gap-2 bg-white dark:bg-[#24172d] px-3 py-2 rounded-xl border border-[#4b1d3f]/20 dark:border-[#3d224d] shadow-xs flex-1 md:flex-none">
+            <BookOpen size={16} className="text-[#4b1d3f] dark:text-pink-300" />
+            <select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} className="bg-transparent text-xs font-bold text-stone-800 dark:text-stone-100 focus:outline-none cursor-pointer">
+              {projects.map((p) => <option key={p.id} value={p.id} className="bg-[#FCF8F2] dark:bg-[#24172d] text-stone-900 dark:text-stone-100">{p.title} ({p.genre || 'Fantasia'})</option>)}
             </select>
           </div>
-          <button onClick={() => handleOpenModal()} className="bg-[#385338] hover:bg-[#2c422c] text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm shrink-0">
+          <button onClick={() => handleOpenModal()} className="bg-[#4b1d3f] hover:bg-[#381531] dark:bg-pink-800 dark:hover:bg-pink-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-xs shrink-0 transition-colors">
             <Plus size={16} /> Nova Ideia
           </button>
         </div>
       </div>
 
-      <div className="bg-white border-2 border-[#d8c2aa] rounded-3xl p-6 shadow-md space-y-4">
-        <div className="flex items-center gap-2 border-b border-[#d8c2aa]/60 pb-3">
-          <Sparkles size={20} className="text-[#385338]" />
-          <h3 className="font-bold font-serif text-stone-900 text-base">Inspiração para o Tema ({currentGenre})</h3>
+      {/* GERADOR CRIATIVO */}
+      <div className="bg-[#FCF8F2] dark:bg-[#1a1120] border border-[#4b1d3f]/20 dark:border-[#3d224d] rounded-3xl p-6 shadow-xs space-y-4">
+        <div className="flex items-center gap-2 border-b border-[#4b1d3f]/10 dark:border-[#3d224d] pb-3">
+          <Sparkles size={20} className="text-[#4b1d3f] dark:text-pink-300" />
+          <h3 className="font-bold font-serif text-stone-900 dark:text-stone-100 text-base">Inspiração para o Tema ({currentGenre})</h3>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <button onClick={() => handleGenerateSuggestion('names')} className="p-3 bg-[#f7eee3] hover:bg-[#ebd9c6] border border-[#d8c2aa] rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm"><User size={16} className="text-[#385338]" /> Nomes</button>
-          <button onClick={() => handleGenerateSuggestion('personalities')} className="p-3 bg-[#f7eee3] hover:bg-[#ebd9c6] border border-[#d8c2aa] rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm"><Sparkles size={16} className="text-[#385338]" /> Personalidade</button>
-          <button onClick={() => handleGenerateSuggestion('worlds')} className="p-3 bg-[#f7eee3] hover:bg-[#ebd9c6] border border-[#d8c2aa] rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm"><Globe size={16} className="text-[#385338]" /> Mundos</button>
-          <button onClick={() => handleGenerateSuggestion('rules')} className="p-3 bg-[#f7eee3] hover:bg-[#ebd9c6] border border-[#d8c2aa] rounded-2xl text-xs font-bold flex items-center justify-center gap-2 shadow-sm"><ShieldAlert size={16} className="text-[#385338]" /> Regras</button>
+          <button onClick={() => handleGenerateSuggestion('names')} className="p-3 bg-white dark:bg-[#24172d] hover:bg-[#f3ccde]/20 dark:hover:bg-[#2e1d3a] border border-[#4b1d3f]/20 dark:border-[#3d224d] rounded-2xl text-xs font-bold text-stone-800 dark:text-stone-100 flex items-center justify-center gap-2 shadow-xs transition-colors"><User size={16} className="text-[#4b1d3f] dark:text-pink-300" /> Nomes</button>
+          <button onClick={() => handleGenerateSuggestion('personalities')} className="p-3 bg-white dark:bg-[#24172d] hover:bg-[#f3ccde]/20 dark:hover:bg-[#2e1d3a] border border-[#4b1d3f]/20 dark:border-[#3d224d] rounded-2xl text-xs font-bold text-stone-800 dark:text-stone-100 flex items-center justify-center gap-2 shadow-xs transition-colors"><Sparkles size={16} className="text-[#4b1d3f] dark:text-pink-300" /> Personalidade</button>
+          <button onClick={() => handleGenerateSuggestion('worlds')} className="p-3 bg-white dark:bg-[#24172d] hover:bg-[#f3ccde]/20 dark:hover:bg-[#2e1d3a] border border-[#4b1d3f]/20 dark:border-[#3d224d] rounded-2xl text-xs font-bold text-stone-800 dark:text-stone-100 flex items-center justify-center gap-2 shadow-xs transition-colors"><Globe size={16} className="text-[#4b1d3f] dark:text-pink-300" /> Mundos</button>
+          <button onClick={() => handleGenerateSuggestion('rules')} className="p-3 bg-white dark:bg-[#24172d] hover:bg-[#f3ccde]/20 dark:hover:bg-[#2e1d3a] border border-[#4b1d3f]/20 dark:border-[#3d224d] rounded-2xl text-xs font-bold text-stone-800 dark:text-stone-100 flex items-center justify-center gap-2 shadow-xs transition-colors"><ShieldAlert size={16} className="text-[#4b1d3f] dark:text-pink-300" /> Regras</button>
         </div>
 
         {currentSuggestion && (
-          <div className="bg-amber-50 border-2 border-amber-200 p-4 rounded-2xl space-y-2">
+          <div className="bg-[#f3ccde]/20 dark:bg-[#281832] border border-[#4b1d3f]/30 dark:border-[#3d224d] p-4 rounded-2xl space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded">{currentSuggestion.type}</span>
-              <button onClick={handleSaveSuggestionAsIdea} className="text-xs font-bold text-[#385338] hover:text-[#2c422c] flex items-center gap-1 bg-white px-3 py-1 rounded-xl border border-[#d8c2aa] shadow-sm"><BookmarkPlus size={14} /> Salvar</button>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#4b1d3f] dark:text-pink-300 bg-white dark:bg-[#24172d] px-2.5 py-0.5 rounded-full border border-[#4b1d3f]/20 dark:border-[#3d224d]">{currentSuggestion.type}</span>
+              <button onClick={handleSaveSuggestionAsIdea} className="text-xs font-bold text-[#4b1d3f] dark:text-pink-300 hover:opacity-80 flex items-center gap-1 bg-white dark:bg-[#24172d] px-3 py-1 rounded-xl border border-[#4b1d3f]/20 dark:border-[#3d224d] shadow-xs transition-colors"><BookmarkPlus size={14} /> Salvar</button>
             </div>
-            <p className="text-xs font-serif italic text-stone-800 leading-relaxed">"{currentSuggestion.text}"</p>
+            <p className="text-xs font-serif italic text-stone-900 dark:text-stone-100 leading-relaxed">"{currentSuggestion.text}"</p>
           </div>
         )}
       </div>
 
+      {/* LISTA DE NOTAS */}
       <div className="space-y-3">
-        <h3 className="font-bold font-serif text-stone-900 text-lg flex items-center gap-2"><Lightbulb size={20} className="text-[#385338]" /> Notas do Projeto ({projectIdeas.length})</h3>
+        <h3 className="font-bold font-serif text-stone-900 dark:text-stone-100 text-lg flex items-center gap-2"><Lightbulb size={20} className="text-[#4b1d3f] dark:text-pink-300" /> Notas do Projeto ({projectIdeas.length})</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {projectIdeas.map((idea) => (
-            <div key={idea.id} className="bg-[#f7eee3] border-2 border-[#d8c2aa] rounded-2xl p-5 shadow-sm flex flex-col justify-between space-y-3">
+            <div key={idea.id} className="bg-[#FCF8F2] dark:bg-[#1a1120] border border-[#4b1d3f]/20 dark:border-[#3d224d] rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-3">
               <div className="flex justify-between items-start gap-2">
-                <p className="text-xs text-stone-800 italic font-serif leading-relaxed">"{idea.content}"</p>
+                <p className="text-xs text-stone-900 dark:text-stone-100 italic font-serif leading-relaxed">"{idea.content}"</p>
                 <div className="flex items-center gap-1 shrink-0">
-                  <button onClick={() => handleOpenModal(idea)} className="p-1 text-stone-500 hover:bg-[#ebd9c6] rounded-md"><Edit2 size={14} /></button>
-                  <button onClick={() => setIdeas((prev) => prev.filter((i) => i.id !== idea.id))} className="p-1 text-red-500 hover:bg-red-100 rounded-md"><Trash2 size={14} /></button>
+                  <button onClick={() => handleOpenModal(idea)} className="p-1 text-stone-600 dark:text-stone-300 hover:bg-[#f3ccde]/30 dark:hover:bg-[#281832] rounded-lg transition-colors"><Edit2 size={14} /></button>
+                  <button onClick={() => setIdeas((prev) => prev.filter((i) => i.id !== idea.id))} className="p-1 text-red-500 hover:bg-red-100 dark:hover:bg-red-950/50 rounded-lg transition-colors"><Trash2 size={14} /></button>
                 </div>
               </div>
-              <div className="flex justify-between items-center text-[10px] text-stone-500 border-t border-[#d8c2aa]/40 pt-2">
-                <span className="font-semibold text-[#385338]">{idea.category || 'Geral'}</span>
+              <div className="flex justify-between items-center text-[10px] text-stone-600 dark:text-stone-300 border-t border-[#4b1d3f]/10 dark:border-[#3d224d] pt-2">
+                <span className="font-semibold text-[#4b1d3f] dark:text-pink-300">{idea.category || 'Geral'}</span>
                 <span>{idea.createdAt}</span>
               </div>
             </div>
           ))}
         </div>
         {projectIdeas.length === 0 && (
-          <div className="text-center py-12 bg-[#f7eee3] rounded-3xl border-2 border-dashed border-[#d8c2aa] text-stone-500 space-y-2">
-            <Lightbulb size={36} className="mx-auto text-stone-400" />
+          <div className="text-center py-12 bg-[#FCF8F2] dark:bg-[#1a1120] rounded-3xl border border-dashed border-[#4b1d3f]/20 dark:border-[#3d224d] text-stone-600 dark:text-stone-300 space-y-2">
+            <Lightbulb size={36} className="mx-auto text-stone-400 dark:text-stone-500" />
             <p className="text-sm font-semibold">Nenhuma ideia anotada ainda.</p>
           </div>
         )}
       </div>
 
+      {/* MODAL */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#f7eee3] border-2 border-[#d8c2aa] rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
-            <div className="flex justify-between items-center border-b border-[#d8c2aa] pb-3">
-              <h3 className="font-bold font-serif text-lg text-stone-900">{editingIdeaId ? 'Editar Ideia' : 'Nova Ideia'}</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-stone-500"><X size={18} /></button>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-[#FCF8F2] dark:bg-[#18121e] border border-[#4b1d3f]/30 dark:border-[#3d224d] rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4 text-stone-900 dark:text-stone-100">
+            <div className="flex justify-between items-center border-b border-[#4b1d3f]/20 dark:border-[#3d224d] pb-3">
+              <h3 className="font-bold font-serif text-lg">{editingIdeaId ? 'Editar Ideia' : 'Nova Ideia'}</h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100"><X size={18} /></button>
             </div>
             <form onSubmit={handleSaveIdea} className="space-y-3 text-xs">
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Categoria</label>
-                <select value={ideaCategory} onChange={(e) => setIdeaCategory(e.target.value as Idea['category'])} className="w-full p-2.5 bg-white border border-[#d8c2aa] rounded-xl">
-                  <option value="Geral">Geral</option>
-                  <option value="Nomes">Nomes</option>
-                  <option value="Mundo">Mundo / Cenário</option>
-                  <option value="Personagens">Personagens</option>
-                  <option value="Regras">Regras do Universo</option>
+                <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1">Categoria</label>
+                <select value={ideaCategory} onChange={(e) => setIdeaCategory(e.target.value as Idea['category'])} className="w-full p-2.5 bg-white dark:bg-[#221a2b] border border-stone-300 dark:border-[#3d224d] rounded-xl text-stone-900 dark:text-stone-100 focus:outline-none">
+                  <option value="Geral" className="bg-white dark:bg-[#221a2b]">Geral</option>
+                  <option value="Nomes" className="bg-white dark:bg-[#221a2b]">Nomes</option>
+                  <option value="Mundo" className="bg-white dark:bg-[#221a2b]">Mundo / Cenário</option>
+                  <option value="Personagens" className="bg-white dark:bg-[#221a2b]">Personagens</option>
+                  <option value="Regras" className="bg-white dark:bg-[#221a2b]">Regras do Universo</option>
                 </select>
               </div>
               <div>
-                <label className="block font-bold text-stone-700 mb-1">Anotação / Insight</label>
-                <textarea rows={4} required placeholder="Escreva o seu pensamento..." value={ideaContent} onChange={(e) => setIdeaContent(e.target.value)} className="w-full p-2.5 bg-white border border-[#d8c2aa] rounded-xl" />
+                <label className="block font-bold text-stone-800 dark:text-stone-200 mb-1">Anotação / Insight</label>
+                <textarea rows={4} required placeholder="Escreva o seu pensamento..." value={ideaContent} onChange={(e) => setIdeaContent(e.target.value)} className="w-full p-2.5 bg-white dark:bg-[#221a2b] border border-stone-300 dark:border-[#3d224d] rounded-xl text-stone-900 dark:text-stone-100 focus:outline-none resize-y" />
               </div>
-              <div className="flex justify-end gap-2 pt-3 border-t border-[#d8c2aa]">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-stone-200 rounded-xl font-semibold">Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-[#385338] text-white rounded-xl font-bold flex items-center gap-1"><Check size={16} /> Guardar Ideia</button>
+              <div className="flex justify-end gap-2 pt-3 border-t border-[#4b1d3f]/20 dark:border-[#3d224d]">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200 rounded-xl font-semibold">Cancelar</button>
+                <button type="submit" className="px-4 py-2 bg-[#4b1d3f] dark:bg-pink-800 text-white rounded-xl font-bold flex items-center gap-1"><Check size={16} /> Guardar Ideia</button>
               </div>
             </form>
           </div>

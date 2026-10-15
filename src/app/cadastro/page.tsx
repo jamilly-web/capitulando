@@ -57,6 +57,10 @@ export default function CadastroPage() {
     existingProfiles.push(newProfile);
     localStorage.setItem("capitulando_custom_profiles", JSON.stringify(existingProfiles));
 
+    // GUARDAR O USERNAME PARA O PAINEL PRINCIPAL
+    localStorage.setItem("capitulando_user_name", nome);
+    localStorage.setItem("capitulando_active_profile_id", newProfileId);
+
     // Inicializar o perfil de autor isolado para este novo utilizador
     const initialAuthorProfile = {
       name: nome,
@@ -73,8 +77,8 @@ export default function CadastroPage() {
       JSON.stringify(initialAuthorProfile)
     );
 
-    // Redirecionar para a página de login após o cadastro bem-sucedido
-    router.push("/login");
+    // Redirecionar para o painel principal após o cadastro bem-sucedido
+    router.push("/");
   }
 
   return (

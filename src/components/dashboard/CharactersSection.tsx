@@ -2,13 +2,15 @@
 
 import React, { useState } from 'react';
 import {
-  Search, Plus, Edit2, Trash2, Calendar, Ruler, Weight, Sparkles, Smile, Frown, Quote, Star, Paperclip, X, Check, Heart, Users, ArrowRight, BookOpen,
+  Search, Plus, Edit2, Trash2, Calendar, Ruler, Weight, Sparkles, Quote, Star,
+  Paperclip, X, Heart, Users, BookOpen, Image as ImageIcon, Link as LinkIcon
 } from 'lucide-react';
 import { useIsolatedStorage } from '@/hooks/useIsolatedStorage';
 
 interface Character {
   id: string; projectId: string; name: string; role: 'Protagonista' | 'Aliado' | 'Antagonista' | 'Secundário';
-  age: number; height: string; weight: string; zodiac: string; mbti: string; imageUrl?: string;
+  age: number; height: string; weight: string; zodiac: string; bloodType: string; mbti: string; imageUrl?: string;
+  imageFit?: 'cover' | 'contain'; imagePosition?: string;
   appearance: string[]; likes: string[]; dislikes: string[]; drinks: string[]; motto: string; shortNote: string;
 }
 
@@ -38,8 +40,13 @@ export function CharactersSection() {
   const [isRelModalOpen, setIsRelModalOpen] = useState(false);
   const [editingRelId, setEditingRelId] = useState<string | null>(null);
 
-  const initialCharData = { name: '', role: 'Protagonista' as Character['role'], age: 20, height: '', weight: '', zodiac: '', mbti: '', imageUrl: '', appearance: '', likes: '', dislikes: '', drinks: '', motto: '', shortNote: '' };
+  const initialCharData = {
+    name: '', role: 'Protagonista' as Character['role'], age: 20, height: '', weight: '', zodiac: '', bloodType: '', mbti: '',
+    imageUrl: '', imageFit: 'cover' as 'cover' | 'contain', imagePosition: 'center',
+    appearance: '', likes: '', dislikes: '', drinks: '', motto: '', shortNote: ''
+  };
   const [formData, setFormData] = useState(initialCharData);
+  const [imgInputType, setImgInputType] = useState<'link' | 'file'>('link');
   const [relFormData, setRelFormData] = useState({ character1Id: '', character2Id: '', type: '', description: '' });
 
   const currentChars = characters.filter((c) => (c.projectId || '1') === selectedProjectId);
@@ -48,12 +55,31 @@ export function CharactersSection() {
   const handleOpenCharModal = (char?: Character) => {
     if (char) {
       setEditingId(char.id);
-      setFormData({ ...char, appearance: char.appearance.join(', '), likes: char.likes.join(', '), dislikes: char.dislikes.join(', '), drinks: char.drinks.join(', '), imageUrl: char.imageUrl || '' });
+      setFormData({
+        ...char,
+        bloodType: char.bloodType || '',
+        appearance: char.appearance ? char.appearance.join(', ') : '',
+        likes: char.likes ? char.likes.join(', ') : '',
+        dislikes: char.dislikes ? char.dislikes.join(', ') : '',
+        drinks: char.drinks ? char.drinks.join(', ') : '',
+        imageUrl: char.imageUrl || '',
+        imageFit: char.imageFit || 'cover',
+        imagePosition: char.imagePosition || 'center'
+      });
     } else {
       setEditingId(null);
       setFormData(initialCharData);
     }
     setIsModalOpen(true);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => setFormData((prev) => ({ ...prev, imageUrl: reader.result as string }));
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSaveChar = (e: React.FormEvent) => {
@@ -76,7 +102,7 @@ export function CharactersSection() {
   };
 
   const handleDeleteChar = (id: string) => {
-    if (confirm('Tem a certeza que deseja eliminar esta ficha?')) {
+    if (confirm('Eliminar esta ficha?')) {
       setCharacters((prev) => prev.filter((c) => c.id !== id));
       setRelationships((prev) => prev.filter((r) => r.character1Id !== id && r.character2Id !== id));
     }
@@ -95,7 +121,7 @@ export function CharactersSection() {
 
   const handleSaveRel = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!relFormData.character1Id || !relFormData.character2Id) return alert('Selecione dois personagens válidos.');
+    if (!relFormData.character1Id || !relFormData.character2Id) return;
     const newRel: Relationship = { ...relFormData, id: editingRelId || Date.now().toString(), projectId: selectedProjectId, type: relFormData.type || 'Indefinido' };
     setRelationships((prev) => editingRelId ? prev.map((r) => r.id === editingRelId ? newRel : r) : [newRel, ...prev]);
     setIsRelModalOpen(false);
@@ -104,107 +130,151 @@ export function CharactersSection() {
   const filteredChars = currentChars.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()) && (filter === 'Todos' || c.role === filter));
 
   return (
-    <div className="space-y-6 font-sans">
-      <div className="flex flex-col md:flex-row md:items-center justify-between border-b-2 border-[#d8c2aa] pb-2 gap-4">
-        <div className="flex gap-4">
-          <button onClick={() => setActiveTab('characters')} className={`pb-2 px-3 font-bold text-sm flex items-center gap-2 border-b-4 -mb-[10px] ${activeTab === 'characters' ? 'border-[#32005c] text-[#385338]' : 'border-transparent text-stone-500'}`}>
-            <Users size={18} /> <span>Fichas ({currentChars.length})</span>
+    <div className="space-y-4 font-sans text-stone-900 dark:text-stone-100">
+      {/* NAVEGAÇÃO SUPERIOR */}
+      <div className="flex flex-wrap justify-between items-center border-b border-[#4b1d3f]/20 dark:border-[#2e1d3a] pb-2 gap-2">
+        <div className="flex gap-2">
+          <button onClick={() => setActiveTab('characters')} className={`pb-1 px-2.5 font-bold text-xs flex items-center gap-1.5 border-b-2 transition-colors ${activeTab === 'characters' ? 'border-[#4b1d3f] dark:border-pink-300 text-[#4b1d3f] dark:text-pink-300' : 'border-transparent text-stone-500'}`}>
+            <Users size={14} /> Fichas ({currentChars.length})
           </button>
-          <button onClick={() => setActiveTab('relationships')} className={`pb-2 px-3 font-bold text-sm flex items-center gap-2 border-b-4 -mb-[10px] ${activeTab === 'relationships' ? 'border-[#32005c] text-[#385338]' : 'border-transparent text-stone-500'}`}>
-            <Heart size={18} /> <span>Relacionamentos ({currentRels.length})</span>
+          <button onClick={() => setActiveTab('relationships')} className={`pb-1 px-2.5 font-bold text-xs flex items-center gap-1.5 border-b-2 transition-colors ${activeTab === 'relationships' ? 'border-[#4b1d3f] dark:border-pink-300 text-[#4b1d3f] dark:text-pink-300' : 'border-transparent text-stone-500'}`}>
+            <Heart size={14} /> Relacionamentos ({currentRels.length})
           </button>
         </div>
-        <div className="flex items-center gap-2 bg-[#f7eee3] px-3 py-1.5 rounded-xl border border-[#d8c2aa]">
-          <BookOpen size={16} className="text-[#385338]" /> <span className="text-xs font-medium text-stone-600">Projeto:</span>
+        <div className="flex items-center gap-1.5 bg-[#FCF8F2] dark:bg-[#1a1120] px-2.5 py-1 rounded-xl border border-[#4b1d3f]/20 dark:border-[#2e1d3a]">
+          <BookOpen size={14} className="text-[#4b1d3f] dark:text-pink-300" />
           <select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} className="bg-transparent text-xs font-bold focus:outline-none cursor-pointer">
-            {projects.map((p) => <option key={p.id} value={p.id}>{p.title}</option>)}
+            {projects.map((p) => <option key={p.id} value={p.id} className="dark:bg-[#1a1120]">{p.title}</option>)}
           </select>
         </div>
       </div>
 
       {activeTab === 'characters' && (
         <>
-          <div className="bg-[#FAE6FA] p-4 rounded-2xl border-2 border-[#32005c] flex flex-col md:flex-row gap-4 items-center justify-between shadow-md">
-            <div className="relative w-full md:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" size={18} />
-              <input type="text" placeholder="Pesquisar ficha..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-white/50 border border-[#32005c] rounded-xl text-xs" />
+          {/* BARRA DE PESQUISA */}
+          <div className="bg-[#FCF8F2] dark:bg-[#1a1120] p-3 rounded-2xl border border-[#4b1d3f]/20 dark:border-[#2e1d3a] flex flex-col sm:flex-row gap-3 items-center justify-between shadow-xs">
+            <div className="relative w-full sm:w-64">
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-stone-400" size={14} />
+              <input type="text" placeholder="Pesquisar ficha..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-8 pr-3 py-1.5 bg-white dark:bg-[#24172d] border border-[#4b1d3f]/20 dark:border-[#382245] rounded-xl text-xs focus:outline-none" />
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1">
               {['Todos', 'Protagonista', 'Aliado', 'Antagonista', 'Secundário'].map((cat) => (
-                <button key={cat} onClick={() => setFilter(cat)} className={`px-3 py-1.5 rounded-lg text-xs font-semibold ${filter === cat ? 'bg-[#32005c] text-white' : 'bg-[#FAE6FA]/60 text-stone-700'}`}>{cat}</button>
+                <button key={cat} onClick={() => setFilter(cat)} className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors ${filter === cat ? 'bg-[#4b1d3f] text-white dark:bg-pink-800' : 'bg-white/80 dark:bg-[#24172d] text-stone-700 dark:text-stone-300'}`}>{cat}</button>
               ))}
             </div>
-            <button onClick={() => handleOpenCharModal()} className="bg-[#32005c] text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2"><Plus size={16} /> Criar Ficha</button>
+            <button onClick={() => handleOpenCharModal()} className="bg-[#4b1d3f] dark:bg-pink-800 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 shrink-0"><Plus size={14} /> Criar Ficha</button>
           </div>
 
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
+          {/* GRELHA NA PALETA BEGE CREMOSO (#FCF8F2) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredChars.map((char) => (
-              <div key={char.id} className="relative bg-[#FAE6FA] border-2 border-[#32005c] rounded-3xl p-6 shadow-lg space-y-6">
-                <div className="absolute top-4 right-4 flex gap-2">
-                  <button onClick={() => handleOpenCharModal(char)} className="p-1.5 bg-[#f3ccde] rounded-lg border border-[#d8c2aa]"><Edit2 size={15} /></button>
-                  <button onClick={() => handleDeleteChar(char.id)} className="p-1.5 bg-[#f3ccde] text-red-600 rounded-lg border border-[#d8c2aa]"><Trash2 size={15} /></button>
+              <div key={char.id} className="relative bg-[#FCF8F2] dark:bg-[#1a1120] border-2 border-[#4b1d3f]/15 dark:border-[#2e1d3a] rounded-3xl p-5 shadow-xs space-y-3 flex flex-col justify-between">
+                
+                {/* BOTÕES DE AÇÃO */}
+                <div className="absolute top-4 right-4 flex gap-1 z-10">
+                  <button onClick={() => handleOpenCharModal(char)} className="p-1 bg-white/80 dark:bg-[#24172d] border border-stone-200 dark:border-[#382245] rounded-lg text-stone-600 dark:text-stone-300 hover:text-[#4b1d3f]"><Edit2 size={13} /></button>
+                  <button onClick={() => handleDeleteChar(char.id)} className="p-1 bg-white/80 dark:bg-[#24172d] border border-stone-200 dark:border-[#382245] rounded-lg text-red-500 hover:text-red-700"><Trash2 size={13} /></button>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-12 gap-6 items-start pt-2">
-                  <div className="sm:col-span-5 flex flex-col items-center">
-                    <div className="relative p-2 bg-[#f7eee3] border-2 border-[#d8c2aa] rounded-2xl w-full max-w-[200px]">
-                      <Paperclip size={20} className="absolute -top-3 left-1/2 -translate-x-1/2 text-stone-500" />
-                      <div className="aspect-[3/4] w-full rounded-xl overflow-hidden bg-stone-200 border border-[#d8c2aa]">
-                        {char.imageUrl ? <img src={char.imageUrl} alt={char.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-xs text-stone-400">Sem foto</div>}
+
+                <div className="space-y-3">
+                  <div className="flex gap-3 items-start">
+                    {/* FOTO POLAROID */}
+                    <div className="relative bg-white dark:bg-[#24172d] p-1.5 pb-5 rounded-md shadow-xs border border-stone-200 dark:border-[#382245] shrink-0 w-28">
+                      <Paperclip size={14} className="absolute -top-2 left-1/2 -translate-x-1/2 text-stone-400" />
+                      <div className="aspect-[3/4] w-full overflow-hidden bg-stone-100 dark:bg-[#1a1120] border border-stone-200 dark:border-[#2e1d3a] rounded-xs">
+                        {char.imageUrl ? (
+                          <img src={char.imageUrl} alt={char.name} style={{ objectFit: char.imageFit || 'cover', objectPosition: char.imagePosition || 'center' }} className="w-full h-full" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-[10px] text-stone-400">Sem foto</div>
+                        )}
                       </div>
-                      <div className="mt-2 text-center"><span className="px-2.5 py-0.5 text-[10px] font-bold bg-[#32005c] text-white rounded-full">{char.role}</span></div>
+                      <div className="mt-1.5 text-center">
+                        <span className="px-1.5 py-0.5 text-[9px] font-bold bg-[#4b1d3f] dark:bg-pink-800 text-white rounded-md">{char.role}</span>
+                      </div>
+                    </div>
+
+                    {/* DADOS DO PERSONAGEM */}
+                    <div className="flex-grow space-y-2 pr-12">
+                      <h3 className="text-xl font-bold font-serif text-stone-900 dark:text-stone-100 leading-tight">{char.name}</h3>
+                      <div className="bg-white/80 dark:bg-[#24172d] p-2.5 rounded-2xl border border-stone-200/80 dark:border-[#382245] grid grid-cols-2 gap-1.5 text-[11px] font-serif text-stone-800 dark:text-stone-200">
+                        <span><Calendar size={11} className="inline mr-1 text-[#4b1d3f] dark:text-pink-300" />{char.age} anos</span>
+                        <span><Ruler size={11} className="inline mr-1 text-[#4b1d3f] dark:text-pink-300" />{char.height || '-'}</span>
+                        <span><Weight size={11} className="inline mr-1 text-[#4b1d3f] dark:text-pink-300" />{char.weight || '-'}</span>
+                        <span><Star size={11} className="inline mr-1 text-[#4b1d3f] dark:text-pink-300" />{char.zodiac || '-'}</span>
+                        <span className="col-span-2 pt-1 border-t border-stone-100 dark:border-[#382245]"><Sparkles size={11} className="inline mr-1 text-[#4b1d3f] dark:text-pink-300" />MBTI: {char.mbti || '-'}</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="sm:col-span-7 space-y-4">
-                    <h3 className="text-2xl font-bold font-serif">{char.name}</h3>
-                    <div className="grid grid-cols-2 gap-2 text-xs bg-[#f3ccde]/70 p-3 rounded-xl border border-[#32005c]">
-                      <span><Calendar size={14} className="inline mr-1 text-[#385338]" /> {char.age} anos</span>
-                      <span><Ruler size={14} className="inline mr-1 text-[#385338]" /> {char.height}</span>
-                      <span><Weight size={14} className="inline mr-1 text-[#385338]" /> {char.weight}</span>
-                      <span><Star size={14} className="inline mr-1 text-[#385338]" /> {char.zodiac}</span>
-                      <span className="col-span-2 pt-1 border-t border-[#d8c2aa]/40"><Sparkles size={14} className="inline mr-1 text-[#385338]" /> MBTI: {char.mbti}</span>
+
+                  {/* APARÊNCIA, GOSTA E NÃO GOSTA */}
+                  <div className="grid grid-cols-2 gap-2 text-[11px]">
+                    <div className="bg-white/80 dark:bg-[#24172d] p-2.5 rounded-2xl border border-stone-200/80 dark:border-[#382245]">
+                      <h4 className="font-bold text-[10px] text-[#4b1d3f] dark:text-pink-300 uppercase tracking-wider mb-0.5">APARÊNCIA</h4>
+                      <p className="text-stone-700 dark:text-stone-300 line-clamp-2">{char.appearance.join(', ') || '-'}</p>
+                    </div>
+                    <div className="bg-white/80 dark:bg-[#24172d] p-2.5 rounded-2xl border border-stone-200/80 dark:border-[#382245] space-y-0.5">
+                      <div><strong className="text-[10px] text-[#4b1d3f] dark:text-pink-300">Gosta:</strong> <span className="text-stone-700 dark:text-stone-300 truncate block">{char.likes.join(', ') || '-'}</span></div>
+                      <div><strong className="text-[10px] text-red-600 dark:text-red-400">Não Gosta:</strong> <span className="text-stone-700 dark:text-stone-300 truncate block">{char.dislikes.join(', ') || '-'}</span></div>
                     </div>
                   </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                  <div className="bg-[#f3ccde]/50 p-3 rounded-xl border border-[#32005c]"><h4 className="font-bold mb-1">Aparência</h4><p className="text-stone-600">{char.appearance.join(', ')}</p></div>
-                  <div className="bg-[#f3ccde]/50 p-3 rounded-xl border border-[#32005c] space-y-2">
-                    <div><h4 className="font-bold">Gosta</h4><p className="text-stone-600">{char.likes.join(', ')}</p></div>
-                    <div><h4 className="font-bold text-red-700">Não Gosta</h4><p className="text-stone-600">{char.dislikes.join(', ')}</p></div>
+
+                  {/* NOTA RÁPIDA (FUNDO AMARELO CREMOSO #FFF8D6 IGUAL DA IMAGEM) */}
+                  <div className="bg-[#FFF8D6] dark:bg-[#2e2617] text-stone-900 dark:text-amber-100 p-2.5 rounded-2xl border border-amber-200/80 dark:border-amber-900/50 text-[11px] font-serif shadow-2xs">
+                    <strong className="text-amber-900 dark:text-amber-300">Nota:</strong> {char.shortNote || 'Sem notas.'}
                   </div>
                 </div>
-                <div className="text-xs space-y-2">
-                  <div className="bg-amber-50 p-3 rounded-xl border border-amber-200 text-amber-900"><strong>Nota:</strong> {char.shortNote}</div>
-                  {char.motto && <div className="italic text-stone-600 bg-[#f3ccde]/40 p-2.5 rounded-xl border border-[#32005c]/60"><Quote size={14} className="inline mr-1 text-[#385338]" />"{char.motto}"</div>}
-                </div>
+
+                {/* MOTTO / LEMA */}
+                {char.motto && (
+                  <div className="p-2 bg-white/70 dark:bg-[#24172d] rounded-2xl border border-stone-200/80 dark:border-[#382245] text-center text-[11px] font-serif italic text-stone-800 dark:text-stone-200 truncate">
+                    "{char.motto}"
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </>
       )}
 
+      {/* MAPA DE RELACIONAMENTOS COM FOTOS */}
       {activeTab === 'relationships' && (
-        <div className="space-y-6">
-          <div className="bg-[#FAE6FA] p-4 rounded-2xl border-2 border-[#32005c] flex justify-between items-center shadow-md">
-            <div><h3 className="font-bold text-base">Mapa de Relacionamentos</h3></div>
-            <button onClick={() => handleOpenRelModal()} disabled={currentChars.length < 2} className="bg-[#32005c] disabled:opacity-50 text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2"><Plus size={16} /> Adicionar Relacionamento</button>
+        <div className="space-y-4">
+          <div className="bg-[#FCF8F2] dark:bg-[#1a1120] p-3 rounded-2xl border border-[#4b1d3f]/20 dark:border-[#2e1d3a] flex justify-between items-center">
+            <h3 className="font-bold text-xs text-stone-900 dark:text-stone-100 font-serif">Mapa de Relacionamentos</h3>
+            <button onClick={() => handleOpenRelModal()} disabled={currentChars.length < 2} className="bg-[#4b1d3f] dark:bg-pink-800 disabled:opacity-50 text-white px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1"><Plus size={14} /> Adicionar Relacionamento</button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {currentRels.map((rel) => {
               const c1 = currentChars.find((c) => c.id === rel.character1Id);
               const c2 = currentChars.find((c) => c.id === rel.character2Id);
               if (!c1 || !c2) return null;
               return (
-                <div key={rel.id} className="bg-white border-2 border-[#32005c] rounded-2xl p-5 shadow-md relative space-y-3">
-                  <div className="absolute top-3 right-3 flex gap-1">
-                    <button onClick={() => handleOpenRelModal(rel)} className="p-1 text-stone-500"><Edit2 size={14} /></button>
-                    <button onClick={() => setRelationships((prev) => prev.filter((r) => r.id !== rel.id))} className="p-1 text-red-500"><Trash2 size={14} /></button>
+                <div key={rel.id} className="bg-[#FCF8F2] dark:bg-[#1a1120] border-2 border-[#4b1d3f]/15 dark:border-[#2e1d3a] rounded-2xl p-3 space-y-2 relative shadow-xs">
+                  <div className="absolute top-2 right-2 flex gap-1 z-10">
+                    <button onClick={() => handleOpenRelModal(rel)} className="p-1 text-stone-500 hover:text-stone-900 dark:hover:text-stone-100"><Edit2 size={13} /></button>
+                    <button onClick={() => setRelationships((prev) => prev.filter((r) => r.id !== rel.id))} className="p-1 text-red-400 hover:text-red-600"><Trash2 size={13} /></button>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <div className="text-center w-24"><span className="text-xs font-bold block truncate">{c1.name}</span></div>
-                    <div className="flex-1 text-center"><span className="px-2 py-0.5 bg-[#FAE6FA] border border-[#32005c] rounded-full text-[10px] font-bold text-[#32005c]">{rel.type}</span></div>
-                    <div className="text-center w-24"><span className="text-xs font-bold block truncate">{c2.name}</span></div>
+                  
+                  {/* FOTOS E NOMES DOS PERSONAGENS */}
+                  <div className="flex items-center justify-between text-xs gap-2 px-1">
+                    <div className="flex items-center gap-2 max-w-[110px]">
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-white border border-[#4b1d3f]/20 shrink-0 shadow-xs">
+                        {c1.imageUrl ? <img src={c1.imageUrl} alt={c1.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[8px] text-stone-400">-</div>}
+                      </div>
+                      <span className="font-bold truncate text-[11px]">{c1.name}</span>
+                    </div>
+
+                    <span className="px-2.5 py-0.5 bg-[#4b1d3f] dark:bg-pink-800 text-white rounded-md text-[10px] font-bold shrink-0">{rel.type}</span>
+
+                    <div className="flex items-center gap-2 max-w-[110px] flex-row-reverse text-right">
+                      <div className="w-8 h-8 rounded-full overflow-hidden bg-white border border-[#4b1d3f]/20 shrink-0 shadow-xs">
+                        {c2.imageUrl ? <img src={c2.imageUrl} alt={c2.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[8px] text-stone-400">-</div>}
+                      </div>
+                      <span className="font-bold truncate text-[11px]">{c2.name}</span>
+                    </div>
                   </div>
-                  {rel.description && <p className="text-xs text-stone-600 bg-[#FAE6FA]/50 p-2 rounded-xl">{rel.description}</p>}
+
+                  {rel.description && <p className="text-[11px] text-stone-700 dark:text-stone-300 bg-white/80 dark:bg-[#24172d] p-2 rounded-xl border border-stone-200 dark:border-[#382245]">{rel.description}</p>}
                 </div>
               );
             })}
@@ -212,61 +282,98 @@ export function CharactersSection() {
         </div>
       )}
 
-      {/* Modal Ficha */}
+      {/* MODAL FICHA */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#f5f5f5] border-2 border-[#32005c] rounded-3xl p-6 w-full max-w-xl max-h-[90vh] overflow-y-auto space-y-4">
-            <div className="flex justify-between items-center border-b border-[#32005c] pb-2"><h3 className="font-bold text-lg">{editingId ? 'Editar Ficha' : 'Criar Nova Ficha'}</h3><button onClick={() => setIsModalOpen(false)}><X size={18} /></button></div>
-            <form onSubmit={handleSaveChar} className="space-y-3 text-xs">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-[#FCF8F2] dark:bg-[#1a1120] border border-[#4b1d3f]/30 dark:border-[#2e1d3a] rounded-2xl p-5 w-full max-w-lg max-h-[90vh] overflow-y-auto space-y-3 text-stone-900 dark:text-stone-100 shadow-xl text-xs">
+            <div className="flex justify-between items-center border-b border-[#4b1d3f]/20 dark:border-[#2e1d3a] pb-2">
+              <h3 className="font-bold text-sm font-serif">{editingId ? 'Editar Ficha' : 'Criar Nova Ficha'}</h3>
+              <button onClick={() => setIsModalOpen(false)}><X size={16} /></button>
+            </div>
+            
+            <form onSubmit={handleSaveChar} className="space-y-2.5">
               <div className="grid grid-cols-2 gap-2">
-                <input type="text" placeholder="Nome" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="p-2 border border-[#32005c] rounded-lg" />
-                <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value as Character['role'] })} className="p-2 border border-[#32005c] rounded-lg">
-                  {['Protagonista', 'Aliado', 'Antagonista', 'Secundário'].map((r) => <option key={r} value={r}>{r}</option>)}
+                <input type="text" placeholder="Nome" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="p-2 bg-white dark:bg-[#24172d] border border-stone-300 dark:border-[#382245] rounded-xl text-stone-900 dark:text-stone-100" />
+                <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value as Character['role'] })} className="p-2 bg-white dark:bg-[#24172d] border border-stone-300 dark:border-[#382245] rounded-xl text-stone-900 dark:text-stone-100">
+                  {['Protagonista', 'Aliado', 'Antagonista', 'Secundário'].map((r) => <option key={r} value={r} className="dark:bg-[#24172d]">{r}</option>)}
                 </select>
               </div>
+
               <div className="grid grid-cols-3 gap-2">
-                <input type="number" placeholder="Idade" value={formData.age} onChange={(e) => setFormData({ ...formData, age: Number(e.target.value) })} className="p-2 border border-[#32005c] rounded-lg" />
-                <input type="text" placeholder="Altura" value={formData.height} onChange={(e) => setFormData({ ...formData, height: e.target.value })} className="p-2 border border-[#32005c] rounded-lg" />
-                <input type="text" placeholder="Peso" value={formData.weight} onChange={(e) => setFormData({ ...formData, weight: e.target.value })} className="p-2 border border-[#32005c] rounded-lg" />
+                <input type="number" placeholder="Idade" value={formData.age} onChange={(e) => setFormData({ ...formData, age: Number(e.target.value) })} className="p-2 bg-white dark:bg-[#24172d] border border-stone-300 dark:border-[#382245] rounded-xl text-stone-900 dark:text-stone-100" />
+                <input type="text" placeholder="Altura" value={formData.height} onChange={(e) => setFormData({ ...formData, height: e.target.value })} className="p-2 bg-white dark:bg-[#24172d] border border-stone-300 dark:border-[#382245] rounded-xl text-stone-900 dark:text-stone-100" />
+                <input type="text" placeholder="Peso" value={formData.weight} onChange={(e) => setFormData({ ...formData, weight: e.target.value })} className="p-2 bg-white dark:bg-[#24172d] border border-stone-300 dark:border-[#382245] rounded-xl text-stone-900 dark:text-stone-100" />
               </div>
+
               <div className="grid grid-cols-2 gap-2">
-                <input type="text" placeholder="Signo" value={formData.zodiac} onChange={(e) => setFormData({ ...formData, zodiac: e.target.value })} className="p-2 border border-[#32005c] rounded-lg" />
-                <input type="text" placeholder="MBTI" value={formData.mbti} onChange={(e) => setFormData({ ...formData, mbti: e.target.value })} className="p-2 border border-[#32005c] rounded-lg" />
+                <input type="text" placeholder="Signo" value={formData.zodiac} onChange={(e) => setFormData({ ...formData, zodiac: e.target.value })} className="p-2 bg-white dark:bg-[#24172d] border border-stone-300 dark:border-[#382245] rounded-xl text-stone-900 dark:text-stone-100" />
+                <input type="text" placeholder="MBTI" value={formData.mbti} onChange={(e) => setFormData({ ...formData, mbti: e.target.value })} className="p-2 bg-white dark:bg-[#24172d] border border-stone-300 dark:border-[#382245] rounded-xl text-stone-900 dark:text-stone-100" />
               </div>
-              <input type="text" placeholder="URL da Imagem" value={formData.imageUrl} onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })} className="w-full p-2 border border-[#32005c] rounded-lg" />
-              <input type="text" placeholder="Aparência (separada por vírgulas)" value={formData.appearance} onChange={(e) => setFormData({ ...formData, appearance: e.target.value })} className="w-full p-2 border border-[#32005c] rounded-lg" />
+
+              <div className="space-y-1.5 p-2 bg-white/60 dark:bg-[#24172d]/50 rounded-xl border border-stone-300 dark:border-[#382245]">
+                <div className="flex justify-between items-center">
+                  <span className="font-bold">Fotografia</span>
+                  <div className="flex gap-1 text-[10px]">
+                    <button type="button" onClick={() => setImgInputType('link')} className={`px-2 py-0.5 rounded ${imgInputType === 'link' ? 'bg-[#4b1d3f] text-white' : ''}`}><LinkIcon size={10} className="inline mr-0.5" />Link</button>
+                    <button type="button" onClick={() => setImgInputType('file')} className={`px-2 py-0.5 rounded ${imgInputType === 'file' ? 'bg-[#4b1d3f] text-white' : ''}`}><ImageIcon size={10} className="inline mr-0.5" />Galeria</button>
+                  </div>
+                </div>
+                {imgInputType === 'link' ? (
+                  <input type="url" placeholder="URL da imagem..." value={formData.imageUrl} onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })} className="w-full p-2 bg-white dark:bg-[#24172d] border border-stone-300 dark:border-[#382245] rounded-xl text-stone-900 dark:text-stone-100" />
+                ) : (
+                  <input type="file" accept="image/*" onChange={handleFileChange} className="w-full text-xs file:mr-2 file:py-1 file:px-2 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#4b1d3f] file:text-white file:cursor-pointer" />
+                )}
+
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <select value={formData.imageFit} onChange={(e) => setFormData({ ...formData, imageFit: e.target.value as 'cover' | 'contain' })} className="w-full p-1.5 bg-white dark:bg-[#24172d] border rounded-lg text-[11px]">
+                    <option value="cover">Preencher (Cover)</option>
+                    <option value="contain">Ajustar Completo (Contain)</option>
+                  </select>
+                  <select value={formData.imagePosition} onChange={(e) => setFormData({ ...formData, imagePosition: e.target.value })} className="w-full p-1.5 bg-white dark:bg-[#24172d] border rounded-lg text-[11px]">
+                    <option value="center">Centro</option>
+                    <option value="top">Topo</option>
+                    <option value="bottom">Fundo</option>
+                  </select>
+                </div>
+              </div>
+
+              <input type="text" placeholder="Aparência (separada por vírgulas)" value={formData.appearance} onChange={(e) => setFormData({ ...formData, appearance: e.target.value })} className="w-full p-2 bg-white dark:bg-[#24172d] border border-stone-300 dark:border-[#382245] rounded-xl text-stone-900 dark:text-stone-100" />
               <div className="grid grid-cols-2 gap-2">
-                <input type="text" placeholder="Gosta (vírgulas)" value={formData.likes} onChange={(e) => setFormData({ ...formData, likes: e.target.value })} className="p-2 border border-[#32005c] rounded-lg" />
-                <input type="text" placeholder="Não Gosta (vírgulas)" value={formData.dislikes} onChange={(e) => setFormData({ ...formData, dislikes: e.target.value })} className="p-2 border border-[#32005c] rounded-lg" />
+                <input type="text" placeholder="Gosta (vírgulas)" value={formData.likes} onChange={(e) => setFormData({ ...formData, likes: e.target.value })} className="p-2 bg-white dark:bg-[#24172d] border border-stone-300 dark:border-[#382245] rounded-xl text-stone-900 dark:text-stone-100" />
+                <input type="text" placeholder="Não Gosta (vírgulas)" value={formData.dislikes} onChange={(e) => setFormData({ ...formData, dislikes: e.target.value })} className="p-2 bg-white dark:bg-[#24172d] border border-stone-300 dark:border-[#382245] rounded-xl text-stone-900 dark:text-stone-100" />
               </div>
-              <input type="text" placeholder="Lema" value={formData.motto} onChange={(e) => setFormData({ ...formData, motto: e.target.value })} className="w-full p-2 border border-[#32005c] rounded-lg" />
-              <textarea placeholder="Nota Rápida" rows={2} value={formData.shortNote} onChange={(e) => setFormData({ ...formData, shortNote: e.target.value })} className="w-full p-2 border border-[#32005c] rounded-lg" />
-              <div className="flex justify-end gap-2 pt-2 border-t border-[#d8c2aa]">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-stone-200 rounded-xl">Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-[#32005c] text-white rounded-xl font-bold">Guardar</button>
+              <input type="text" placeholder="Frase / Lema" value={formData.motto} onChange={(e) => setFormData({ ...formData, motto: e.target.value })} className="w-full p-2 bg-white dark:bg-[#24172d] border border-stone-300 dark:border-[#382245] rounded-xl text-stone-900 dark:text-stone-100" />
+              <textarea placeholder="Nota Rápida" rows={2} value={formData.shortNote} onChange={(e) => setFormData({ ...formData, shortNote: e.target.value })} className="w-full p-2 bg-white dark:bg-[#24172d] border border-stone-300 dark:border-[#382245] rounded-xl text-stone-900 dark:text-stone-100" />
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-[#4b1d3f]/20 dark:border-[#2e1d3a]">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-3 py-1.5 bg-stone-200 dark:bg-stone-800 rounded-xl font-semibold">Cancelar</button>
+                <button type="submit" className="px-3 py-1.5 bg-[#4b1d3f] text-white rounded-xl font-bold">Guardar</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Modal Relacionamento */}
+      {/* MODAL RELACIONAMENTO */}
       {isRelModalOpen && (
-        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[#f5f5f5] border-2 border-[#32005c] rounded-3xl p-6 w-full max-w-md space-y-4">
-            <div className="flex justify-between items-center border-b border-[#d8c2aa] pb-2"><h3 className="font-bold text-lg">{editingRelId ? 'Editar Relacionamento' : 'Novo Relacionamento'}</h3><button onClick={() => setIsRelModalOpen(false)}><X size={18} /></button></div>
-            <form onSubmit={handleSaveRel} className="space-y-3 text-xs">
-              <select value={relFormData.character1Id} onChange={(e) => setRelFormData({ ...relFormData, character1Id: e.target.value })} className="w-full p-2 border border-[#32005c] rounded-lg">
-                {currentChars.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-[#FCF8F2] dark:bg-[#1a1120] border border-[#4b1d3f]/30 dark:border-[#2e1d3a] rounded-2xl p-4 w-full max-w-sm space-y-3 text-xs text-stone-900 dark:text-stone-100">
+            <div className="flex justify-between items-center border-b border-[#4b1d3f]/20 dark:border-[#2e1d3a] pb-2">
+              <h3 className="font-bold">{editingRelId ? 'Editar Relacionamento' : 'Novo Relacionamento'}</h3>
+              <button onClick={() => setIsRelModalOpen(false)}><X size={16} /></button>
+            </div>
+            <form onSubmit={handleSaveRel} className="space-y-2">
+              <select value={relFormData.character1Id} onChange={(e) => setRelFormData({ ...relFormData, character1Id: e.target.value })} className="w-full p-2 bg-white dark:bg-[#24172d] border border-stone-300 dark:border-[#382245] rounded-xl">
+                {currentChars.map((c) => <option key={c.id} value={c.id} className="dark:bg-[#24172d]">{c.name}</option>)}
               </select>
-              <select value={relFormData.character2Id} onChange={(e) => setRelFormData({ ...relFormData, character2Id: e.target.value })} className="w-full p-2 border border-[#32005c] rounded-lg">
-                {currentChars.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              <select value={relFormData.character2Id} onChange={(e) => setRelFormData({ ...relFormData, character2Id: e.target.value })} className="w-full p-2 bg-white dark:bg-[#24172d] border border-stone-300 dark:border-[#382245] rounded-xl">
+                {currentChars.map((c) => <option key={c.id} value={c.id} className="dark:bg-[#24172d]">{c.name}</option>)}
               </select>
-              <input type="text" placeholder="Tipo de Ligação" required value={relFormData.type} onChange={(e) => setRelFormData({ ...relFormData, type: e.target.value })} className="w-full p-2 border border-[#32005c] rounded-lg" />
-              <textarea placeholder="Descrição" rows={2} value={relFormData.description} onChange={(e) => setRelFormData({ ...relFormData, description: e.target.value })} className="w-full p-2 border border-[#32005c] rounded-lg" />
-              <div className="flex justify-end gap-2 pt-2 border-t border-[#d8c2aa]">
-                <button type="button" onClick={() => setIsRelModalOpen(false)} className="px-4 py-2 bg-stone-200 rounded-xl">Cancelar</button>
-                <button type="submit" className="px-4 py-2 bg-[#32005c] text-white rounded-xl font-bold">Guardar</button>
+              <input type="text" placeholder="Tipo de Ligação" required value={relFormData.type} onChange={(e) => setRelFormData({ ...relFormData, type: e.target.value })} className="w-full p-2 bg-white dark:bg-[#24172d] border border-stone-300 dark:border-[#382245] rounded-xl" />
+              <textarea placeholder="Descrição" rows={2} value={relFormData.description} onChange={(e) => setRelFormData({ ...relFormData, description: e.target.value })} className="w-full p-2 bg-white dark:bg-[#24172d] border border-stone-300 dark:border-[#382245] rounded-xl" />
+              <div className="flex justify-end gap-2 pt-2 border-t border-[#4b1d3f]/20 dark:border-[#2e1d3a]">
+                <button type="button" onClick={() => setIsRelModalOpen(false)} className="px-3 py-1.5 bg-stone-200 dark:bg-stone-800 rounded-xl">Cancelar</button>
+                <button type="submit" className="px-3 py-1.5 bg-[#4b1d3f] text-white rounded-xl font-bold">Guardar</button>
               </div>
             </form>
           </div>

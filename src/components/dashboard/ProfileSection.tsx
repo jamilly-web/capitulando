@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Feather, BookOpen, Award, Sparkles, Edit3, Check, Heart, Globe, Mail, Save } from 'lucide-react';
 import { useIsolatedStorage } from '@/hooks/useIsolatedStorage';
 
@@ -15,7 +15,16 @@ interface AuthorProfile {
   avatarUrl: string;
 }
 
-const DEFAULT_PROFILE: AuthorProfile = { name: '', penName: '', email: '', bio: '', quote: '', favoriteGenres: [], websiteUrl: '', avatarUrl: '' };
+const DEFAULT_PROFILE: AuthorProfile = { 
+  name: '', 
+  penName: '', 
+  email: '', 
+  bio: '', 
+  quote: '', 
+  favoriteGenres: [], 
+  websiteUrl: '', 
+  avatarUrl: '' 
+};
 
 export function ProfileSection() {
   const [profile, setProfile] = useIsolatedStorage<AuthorProfile>('author_profile', DEFAULT_PROFILE);
@@ -24,9 +33,55 @@ export function ProfileSection() {
   const [genreInput, setGenreInput] = useState('');
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  // EFETUA O PREENCHIMENTO AUTOMÁTICO COM OS DADOS DE LOGIN OU CADASTRO
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const activeProfileId = localStorage.getItem('capitulando_active_profile_id');
+        const customProfiles = JSON.parse(localStorage.getItem('capitulando_custom_profiles') || '[]');
+        const currentUserName = localStorage.getItem('capitulando_user_name') || '';
+
+        // Tenta encontrar o perfil específico ativo
+        const activeCustomProfile = customProfiles.find((p: { id: string }) => p.id === activeProfileId);
+
+        // Se existir um perfil isolado guardado para este utilizador, puxa dele
+        const specificAuthorProfileKey = activeProfileId ? `capitulando_${activeProfileId}_author_profile` : null;
+        const savedAuthorProfile = specificAuthorProfileKey ? JSON.parse(localStorage.getItem(specificAuthorProfileKey) || 'null') : null;
+
+        setProfile((prev) => ({
+          ...prev,
+          name: prev.name || savedAuthorProfile?.name || activeCustomProfile?.name || currentUserName || '',
+          email: prev.email || savedAuthorProfile?.email || activeCustomProfile?.email || '',
+          penName: prev.penName || savedAuthorProfile?.penName || activeCustomProfile?.name || currentUserName || '',
+          bio: prev.bio || savedAuthorProfile?.bio || '',
+          quote: prev.quote || savedAuthorProfile?.quote || '',
+          favoriteGenres: prev.favoriteGenres.length > 0 ? prev.favoriteGenres : (savedAuthorProfile?.favoriteGenres || []),
+          websiteUrl: prev.websiteUrl || savedAuthorProfile?.websiteUrl || '',
+          avatarUrl: prev.avatarUrl || savedAuthorProfile?.avatarUrl || '',
+        }));
+      }
+    } catch (e) {
+      console.warn('Não foi possível carregar os dados automáticos da conta/login', e);
+    }
+  }, []);
+
+  // Mantém os dados do formulário sincronizados com o perfil
+  useEffect(() => {
+    setFormData(profile);
+  }, [profile]);
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     setProfile(formData);
+    
+    // Também atualiza no armazenamento específico do perfil ativo se houver
+    if (typeof window !== 'undefined') {
+      const activeProfileId = localStorage.getItem('capitulando_active_profile_id');
+      if (activeProfileId) {
+        localStorage.setItem(`capitulando_${activeProfileId}_author_profile`, JSON.stringify(formData));
+      }
+    }
+
     setIsEditing(false);
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
@@ -43,13 +98,18 @@ export function ProfileSection() {
     <div className="space-y-6 font-sans">
       <div className="bg-[#f3ccde]/60 dark:bg-[#221a2b] p-5 rounded-2xl border-2 border-[#4b1d3f]/20 dark:border-[#382b47] flex justify-between items-center shadow-sm">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-[#f3ccde] dark:bg-[#2a2035] text-[#4b1d3f] dark:text-pink-300 rounded-xl border border-[#4b1d3f]/30"><User size={28} /></div>
+          <div className="p-3 bg-[#f3ccde] dark:bg-[#2a2035] text-[#4b1d3f] dark:text-pink-300 rounded-xl border border-[#4b1d3f]/30">
+            <User size={28} />
+          </div>
           <div>
-            <h2 className="text-xl font-bold font-serif text-stone-900 dark:text-stone-100">Perfil do Autor (Isolado)</h2>
-            <p className="text-xs text-stone-600 dark:text-stone-400">Gerencie as informações exclusivas do autor atual no seu ambiente privado.</p>
+            <h2 className="text-xl font-bold font-serif text-stone-900 dark:text-stone-100">Perfil do Autor</h2>
+            <p className="text-xs text-stone-600 dark:text-stone-400">Dados integrados com a sua conta. Gerencie as suas informações literárias abaixo.</p>
           </div>
         </div>
-        <button onClick={() => { setIsEditing(!isEditing); setFormData(profile); }} className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm ${isEditing ? 'bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200' : 'bg-[#4b1d3f] dark:bg-pink-800 text-white'}`}>
+        <button 
+          onClick={() => { setIsEditing(!isEditing); setFormData(profile); }} 
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm ${isEditing ? 'bg-stone-200 dark:bg-stone-800 text-stone-800 dark:text-stone-200' : 'bg-[#4b1d3f] dark:bg-pink-800 text-white'}`}
+        >
           <Edit3 size={16} /> <span>{isEditing ? 'Cancelar Edição' : 'Editar Perfil'}</span>
         </button>
       </div>
@@ -71,7 +131,7 @@ export function ProfileSection() {
               </div>
             )}
             <div className="space-y-1">
-              <h3 className="text-xl font-bold font-serif text-stone-900 dark:text-stone-100">{profile.name || 'Nome do Autor'}</h3>
+              <h3 className="text-xl font-bold font-serif text-stone-900 dark:text-stone-100">{profile.name || 'Nome não definido'}</h3>
               <p className="text-xs text-[#4b1d3f] dark:text-pink-300 font-semibold">Pseudónimo: {profile.penName || 'Não definido'}</p>
             </div>
             {profile.quote && (
@@ -88,7 +148,7 @@ export function ProfileSection() {
           <div className="md:col-span-2 space-y-6">
             <div className="bg-white dark:bg-[#1a1321] border-2 border-[#4b1d3f]/20 dark:border-[#382b47] rounded-3xl p-6 shadow-sm space-y-3">
               <h4 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-100 border-b border-[#4b1d3f]/15 dark:border-[#382b47] pb-2">Biografia Literária</h4>
-              <p className="text-xs font-serif leading-relaxed text-stone-700 dark:text-stone-300 whitespace-pre-wrap">{profile.bio || 'Nenhuma biografia registada ainda.'}</p>
+              <p className="text-xs font-serif leading-relaxed text-stone-700 dark:text-stone-300 whitespace-pre-wrap">{profile.bio || 'Nenhuma biografia registada ainda. Clique em "Editar Perfil" para escrever a sua biografia.'}</p>
             </div>
 
             <div className="bg-white dark:bg-[#1a1321] border-2 border-[#4b1d3f]/20 dark:border-[#382b47] rounded-3xl p-6 shadow-sm space-y-3">
@@ -126,23 +186,46 @@ export function ProfileSection() {
           <h3 className="font-serif font-bold text-lg text-stone-900 dark:text-stone-100 border-b border-[#4b1d3f]/20 dark:border-[#382b47] pb-3">Editar Informações do Perfil</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nome do Autor</label><input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full p-2.5 bg-stone-50 dark:bg-[#221a2b] border border-stone-200 dark:border-[#382b47] rounded-xl text-stone-800 dark:text-stone-100" /></div>
-            <div><label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Pseudónimo Literário</label><input type="text" value={formData.penName} onChange={(e) => setFormData({ ...formData, penName: e.target.value })} className="w-full p-2.5 bg-stone-50 dark:bg-[#221a2b] border border-stone-200 dark:border-[#382b47] rounded-xl text-stone-800 dark:text-stone-100" /></div>
+            <div>
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Nome Completo / Autor</label>
+              <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} placeholder="Seu nome" className="w-full p-2.5 bg-stone-50 dark:bg-[#221a2b] border border-stone-200 dark:border-[#382b47] rounded-xl text-stone-800 dark:text-stone-100" />
+            </div>
+            <div>
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Pseudónimo Literário</label>
+              <input type="text" value={formData.penName} onChange={(e) => setFormData({ ...formData, penName: e.target.value })} placeholder="Ex: J. K. Rowling" className="w-full p-2.5 bg-stone-50 dark:bg-[#221a2b] border border-stone-200 dark:border-[#382b47] rounded-xl text-stone-800 dark:text-stone-100" />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Email</label><input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="w-full p-2.5 bg-stone-50 dark:bg-[#221a2b] border border-stone-200 dark:border-[#382b47] rounded-xl text-stone-800 dark:text-stone-100" /></div>
-            <div><label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Website (URL)</label><input type="url" value={formData.websiteUrl} onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })} className="w-full p-2.5 bg-stone-50 dark:bg-[#221a2b] border border-stone-200 dark:border-[#382b47] rounded-xl text-stone-800 dark:text-stone-100" /></div>
+            <div>
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Email do Autor</label>
+              <input type="email" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="autor@exemplo.com" className="w-full p-2.5 bg-stone-50 dark:bg-[#221a2b] border border-stone-200 dark:border-[#382b47] rounded-xl text-stone-800 dark:text-stone-100" />
+            </div>
+            <div>
+              <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Website / Redes Sociais (URL)</label>
+              <input type="url" value={formData.websiteUrl} onChange={(e) => setFormData({ ...formData, websiteUrl: e.target.value })} placeholder="https://seu-site.com" className="w-full p-2.5 bg-stone-50 dark:bg-[#221a2b] border border-stone-200 dark:border-[#382b47] rounded-xl text-stone-800 dark:text-stone-100" />
+            </div>
           </div>
 
-          <div><label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">URL da Foto/Avatar</label><input type="url" value={formData.avatarUrl} onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })} className="w-full p-2.5 bg-stone-50 dark:bg-[#221a2b] border border-stone-200 dark:border-[#382b47] rounded-xl text-stone-800 dark:text-stone-100" /></div>
-          <div><label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Lema / Citação Inspiradora</label><input type="text" value={formData.quote} onChange={(e) => setFormData({ ...formData, quote: e.target.value })} className="w-full p-2.5 bg-stone-50 dark:bg-[#221a2b] border border-stone-200 dark:border-[#382b47] rounded-xl text-stone-800 dark:text-stone-100" /></div>
-          <div><label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Biografia Literária</label><textarea rows={4} value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })} className="w-full p-2.5 bg-stone-50 dark:bg-[#221a2b] border border-stone-200 dark:border-[#382b47] rounded-xl text-stone-800 dark:text-stone-100" /></div>
+          <div>
+            <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">URL da Foto / Avatar</label>
+            <input type="url" value={formData.avatarUrl} onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })} placeholder="https://exemplo.com/sua-foto.jpg" className="w-full p-2.5 bg-stone-50 dark:bg-[#221a2b] border border-stone-200 dark:border-[#382b47] rounded-xl text-stone-800 dark:text-stone-100" />
+          </div>
+
+          <div>
+            <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Lema / Citação Inspiradora</label>
+            <input type="text" value={formData.quote} onChange={(e) => setFormData({ ...formData, quote: e.target.value })} placeholder="Uma frase que inspira a sua escrita..." className="w-full p-2.5 bg-stone-50 dark:bg-[#221a2b] border border-stone-200 dark:border-[#382b47] rounded-xl text-stone-800 dark:text-stone-100" />
+          </div>
+
+          <div>
+            <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Biografia Literária</label>
+            <textarea rows={4} value={formData.bio} onChange={(e) => setFormData({ ...formData, bio: e.target.value })} placeholder="Escreva um pouco sobre a sua jornada como autor(a)..." className="w-full p-2.5 bg-stone-50 dark:bg-[#221a2b] border border-stone-200 dark:border-[#382b47] rounded-xl text-stone-800 dark:text-stone-100" />
+          </div>
 
           <div>
             <label className="block font-bold text-stone-700 dark:text-stone-300 mb-1">Géneros Favoritos</label>
             <div className="flex gap-2 mb-2">
-              <input type="text" placeholder="Adicionar género..." value={genreInput} onChange={(e) => setGenreInput(e.target.value)} className="flex-1 p-2 bg-stone-50 dark:bg-[#221a2b] border border-stone-200 dark:border-[#382b47] rounded-xl text-stone-800 dark:text-stone-100" />
+              <input type="text" placeholder="Adicionar género (ex: Fantasia, Drama)..." value={genreInput} onChange={(e) => setGenreInput(e.target.value)} className="flex-1 p-2 bg-stone-50 dark:bg-[#221a2b] border border-stone-200 dark:border-[#382b47] rounded-xl text-stone-800 dark:text-stone-100" />
               <button type="button" onClick={handleAddGenre} className="px-3 py-2 bg-[#4b1d3f] text-white rounded-xl font-bold">Adicionar</button>
             </div>
             <div className="flex flex-wrap gap-1.5">
